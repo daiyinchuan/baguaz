@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <!--#
+        include("/admin/head.html",{title:"修改单网页",description:"",keywords:""}){}
+
+        var setting=@BgzKit.json2obj(cat.setting);
+    -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${JS_PATH}/kindeditor/themes/default/default.css" type="text/css"/>
+    <style type="text/css">
+        #tab4 p{
+            font-weight: 500;
+            margin: 0;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" charset="utf-8" src="${JS_PATH}/kindeditor/kindeditor-all.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            $('input[name="setting[ishtml]"]').on("change",function(event){
+                initursl("category",event.target.value,$('select[name="setting[category_ruleid]"]'));
+            });
+            
+            $('select[name="info[parentid]"]').on("change",function(event){
+                $('input[name="info[catdir]"]').trigger("validate");
+        	});
+
+            $('select[name="setting[template_list]"]').on("change",function(event){
+                if(event.target.value==""){
+                    return;
+                }
+                $.ajax({
+                    type: "GET",
+                    url: "/admin/category/pagetplFileList",
+                    data: {
+                        style:event.target.value,
+                    },
+                    dataType: "json",
+                    success: function(ret){
+                        if(ret.code==${@C.success}){
+                            var page=$('select[name="setting[page_template]"]');
+                            page.empty();
+                            var options='<option value>请选择</option>';
+                            $.each(ret.map.pagetpllist,function(i,n){
+                                options+='<option value="'+n.name+'">'+n.name+'</option>'
+                            })
+                            page.append(options);
+                        }
+                    }
+                });
+            });
+
+            var validmsg="输入正确";
+            $("form").validator({
+                theme: 'simple_right',
+                rules: {
+                    catdir: [/^(\w|-)+$/, "目录名称必须为字母、数字、下划线、中划线"],
+                },
+                fields:{
+                    'info[catname]':{
+                        rule:"栏目名称:required,length[~30]",
+                        tip:"请输入栏目名称",
+                        ok:validmsg
+                    },
+                    'info[catdir]':{
+                        rule:"目录名称:required,catdir,remote[/admin/category/checkcatdir, catid:#catid, parentid:#parentid]",
+                        tip:"请输入目录名称",
+                        ok:validmsg
+                    },
+                    'setting[template_list]':{
+                        rule:"可用风格:required",
+                        msg: {
+                            required: "请在【模板设置】选项中设置模板",
+                        },
+                        tip:"请在【模板设置】选项中设置模板",
+                        ok:validmsg
+                    }
+                },
+                valid: function(form){
+                    var me = this;
+                    // 提交表单之前，hold住表单，防止重复提交
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/category/edit",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.success}){
+                                window.top.layer.alert(ret.msg,function(index){
+                                    window.top.layer.close(index)
+                                    location.href="/admin/category/init"
+                                })
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid:function(form,errors){
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+
+            $('.submitBtn').on("click",function(event){
+                $('form').trigger("validate");
+            });
+
+            KindEditor.ready(function(K) {
+                var editor = K.editor({
+                    fileManagerJson:"/admin/attachment/manager",
+                    allowFileManager:true,
+                    uploadJson:"/admin/attachment/upload",
+                });
+                $('.uploadBtn').click(function () {
+                    editor.loadPlugin('image', function () {
+                        editor.plugin.imageDialog({
+                            imageUrl: $('input[name="info[image]"]').val(),
+                            clickFn: function (url, title, width, height, border, align) {
+                                $('input[name="info[image]"]').val(url);
+                                editor.hideDialog();
+                            }
+                        });
+                    });
+                });
+            });
+
+            $.each(${catpriv},function(i,n){
+                $('input[name="roleids"]').filter('[value="'+n+'"]').prop("checked",true)
+            });
+        });
+        var initursl=function(file,ishtml,sjq){
+            $.ajax({
+                type: "GET",
+                url: "/admin/urlrule/getSelUrList",
+                data: {
+                    file:file,
+                    ishtml:ishtml
+                },
+                dataType: "json",
+                success: function(ret){
+                    if(ret.code==${@C.success}){
+                        sjq.empty();
+                        var options="";
+                        $.each(ret.map.selUrList,function(i,n){
+                            options+=('<option value="'+n.id+'">'+n.example+'</option>');
+                        })
+                        sjq.append(options);
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <div id="catmngbar">
+                <!--#include("/admin/category/catmngbar.html"){}-->
+            </div>
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-tabs nolrs" data-am-tabs="{nolrs: 1}">
+                        <ul class="am-tabs-nav am-nav am-nav-tabs">
+                            <li class="am-active"><a href="#tab1">基本选项</a></li>
+                            <li><a href="#tab2">生成HTML设置</a></li>
+                            <li><a href="#tab3">模板设置</a></li>
+                            <li><a href="#tab4">SEO设置</a></li>
+                            <li><a href="#tab5">权限设置</a></li>
+                        </ul>
+                        <div class="am-tabs-bd">
+                            <div class="am-tab-panel am-fade am-in am-active" id="tab1">
+                                <div class="am-form-group">
+                                    <label for="info[parentid]" class="am-u-sm-2 am-form-label">上级栏目：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <select id="parentid" name="info[parentid]">
+                                            <option value="0" selected>≡ 作为一级栏目 ≡</option>
+                                            <!--#
+                                                for(pcat in catlist){
+                                                    if(cat.parentid==pcat.catid){
+                                                        print('<option selected value="'+pcat.catid+'">'+pcat.pos+pcat.catname+'</option>');
+                                                    }else{
+                                                        print('<option value="'+pcat.catid+'">'+pcat.pos+pcat.catname+'</option>');
+                                                    }
+                                                }
+                                            -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="info[catname]" class="am-u-sm-2 am-form-label">栏目名称：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <input name="info[catname]" type="text" class="am-inline-block" value="${cat.catname}"/>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="info[catdir]" class="am-u-sm-2 am-form-label">英文名称：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <input name="info[catdir]" type="text" class="am-inline-block" value="${cat.catdir}"/>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="info[image]" class="am-u-sm-2 am-form-label">栏目图片：</label>
+                                    <div class="am-u-sm-4 am-padding-0">
+                                        <input name="info[image]" type="text" value="${cat.image}"/>
+                                    </div>
+                                    <div class="am-u-sm-2 am-u-end">
+                                        <button type="button" class="uploadBtn am-btn am-btn-default am-btn-xs">上传图片</button>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="info[description]" class="am-u-sm-2 am-form-label">描述：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <textarea name="info[description]" rows="5" cols="30">${cat.description}</textarea>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="info[ismenu]" class="am-u-sm-2 am-form-label">是否显示：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <label class="am-radio-inline">
+                                            <input type="radio" name="info[ismenu]" value="1" <!--# if(cat.ismenu==1){print("checked");} -->/> 是
+                                        </label>
+                                        <label class="am-radio-inline">
+                                            <input type="radio" name="info[ismenu]" value="0" <!--# if(cat.ismenu==0){print("checked");} -->> 否
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="am-tab-panel am-fade" id="tab2">
+                                <div class="am-form-group">
+                                    <label for="setting[ishtml]" class="am-u-sm-2 am-form-label">栏目生成Html：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <label class="am-radio-inline">
+                                            <input type="radio" name="setting[ishtml]" value="1" <!--# if(setting.ishtml==1){print("checked");} -->/> 是
+                                        </label>
+                                        <label class="am-radio-inline">
+                                            <input type="radio" name="setting[ishtml]" value="0" <!--# if(setting.ishtml==0){print("checked");} -->/> 否
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="setting[category_ruleid]" class="am-u-sm-2 am-form-label">URL规则：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <select name="setting[category_ruleid]">
+                                            <!--#
+                                                for(ur in catSelUrList){
+                                                    if(setting.category_ruleid==ur.id){
+                                                        print('<option selected value="'+ur.id+'">'+ur.example+'</option>');
+                                                    }else{
+                                                        print('<option value="'+ur.id+'">'+ur.example+'</option>');
+                                                    }
+                                                }
+                                            -->
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="am-tab-panel am-fade" id="tab3">
+                                <div class="am-form-group">
+                                    <label for="setting[template_list]" class="am-u-sm-2 am-form-label">可用风格：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <select name="setting[template_list]">
+                                            <option value="" selected>请选择</option>
+                                            <!--#
+                                                for(tpl in templatelist){
+                                                    if(setting.template_list==tpl.dirname){
+                                                        print('<option selected value="'+tpl.dirname+'">'+tpl.name+'</option>');
+                                                    }else{
+                                                        print('<option value="'+tpl.dirname+'">'+tpl.name+'</option>');
+                                                    }
+                                                }
+                                            -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="setting[page_template]" class="am-u-sm-2 am-form-label">单网页模板：</label>
+                                    <div class="am-u-sm-4 am-u-end am-padding-0">
+                                        <select name="setting[page_template]">
+                                            <option value="" selected>请选择</option>
+                                            <!--#
+                                                for(tpl in pagetpllist){
+                                                    if(setting.page_template==tpl.name){
+                                                        print('<option selected value="'+tpl.name+'">'+tpl.name+'</option>');
+                                                    }else{
+                                                        print('<option value="'+tpl.name+'">'+tpl.name+'</option>');
+                                                    }
+                                                }
+                                            -->
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="am-tab-panel am-fade" id="tab4">
+                                <div class="am-form-group">
+                                    <label for="setting[meta_title]" class="am-u-sm-3 am-form-label">
+                                        META Title（栏目标题）
+                                        <p>针对搜索引擎设置的标题</p>
+                                    </label>
+                                    <div class="am-u-sm-8 am-u-end am-padding-left-0 am-padding-top-sm">
+                                        <input name="setting[meta_title]" type="text" value="${setting.meta_title}"/>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="setting[meta_keywords]" class="am-u-sm-3 am-form-label">
+                                        META Keywords（栏目关键词）
+                                        <p>关键字中间用半角逗号隔开</p>
+                                    </label>
+                                    <div class="am-u-sm-8 am-u-end am-padding-0">
+                                        <textarea name="setting[meta_keywords]" rows="5" cols="30">${setting.meta_keywords}</textarea>
+                                    </div>
+                                </div>
+                                <div class="am-form-group">
+                                    <label for="setting[meta_description]" class="am-u-sm-3 am-form-label">
+                                        META Description（栏目描述）
+                                        <p>针对搜索引擎设置的网页描述</p>
+                                    </label>
+                                    <div class="am-u-sm-8 am-u-end am-padding-0">
+                                        <textarea name="setting[meta_description]" rows="5" cols="30">${setting.meta_description}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="am-tab-panel am-fade" id="tab5">
+                                <!--#
+									for(role in roles){
+								-->
+                                <label class="am-checkbox-inline bgz-checkbox-inline">
+                                    <input name="roleids" type="checkbox" value="${role.id}">
+                                    ${role.name}
+                                </label>
+                                <!--#
+                                    }
+                                -->
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="catid" name="info[catid]" value="${cat.catid}"/>
+                    <input type="hidden" name="info[type]" value="1"/>
+                    <input type="hidden" name="dosubmit"/>
+                    <div class="am-form-group am-margin-sm">
+                        <label class="am-u-sm-2 am-form-label">
+                        </label>
+                        <div class="am-u-sm-8 am-u-end am-padding-0">
+                            <button type="button" class="submitBtn am-btn am-btn-default am-btn-sm">提交</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,47 @@
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="keywords" content="${SEO['keywords']}">
+    <meta name="description" content="${SEO['description']}">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        <!--# if(isEmpty(seo_title)){ -->
+        ${SEO['title']} - ${SEO['site_title']}
+        <!--# }else{ -->
+        ${seo_title}
+        <!--# } -->
+    </title>
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <!-- Set render engine for 360 browser -->
+    <meta name="renderer" content="webkit">
+    <!-- No Baidu Siteapp-->
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <!-- Add to homescreen for Chrome on Android -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Add to homescreen for Safari on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Amaze UI"/>
+    <!-- Tile icon for Win8 (144x144 + tile color) -->
+    <meta name="msapplication-TileColor" content="#0e90d2">
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/jquery.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/underscore.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.js"></script>
+    <!--# if(session!=null && !isEmpty(session.member)){ -->
+    <script type="text/javascript">
+        //提取通知
+        $(function(){
+            $.ajax({
+                type: "GET",
+                url: "/notification/getUnreadCount/${session.member.id}",
+                dataType: "json",
+                success: function(ret){
+                    if(ret.code==${@C.success}){
+                        if(ret.map.uc>0){
+                            $(".noti_count").html(ret.map.uc).removeClass("am-hide")
+                        }
+                    }
+                }
+            });
+        })
+    </script>
+    <!--# } -->

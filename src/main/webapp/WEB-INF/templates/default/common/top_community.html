@@ -1,0 +1,88 @@
+        <style>
+            @media only screen and (min-width: 641px) {
+                .am-topbar-nav > li > a:after {
+                    border-bottom: 0;
+                    border-right: 0;
+                    border-left: 0;
+                    border-top: 0;
+                }
+            }
+        </style>
+        <div class="am-topbar am-topbar-inverse">
+            <div class="am-g am-g-fixed">
+                <div class="am-u-sm-12">
+
+                    <h1 class="am-topbar-brand">
+                        <a href="${bc.siteurl()}">
+                            baguaz
+                        </a>
+                    </h1>
+
+                    <button class="am-topbar-btn am-topbar-toggle am-btn am-btn-sm am-btn-secondary am-show-sm-only" style="position: relative" data-am-collapse="{target: '#topbar-collapse'}">
+                        <span class="am-sr-only">导航切换</span>
+                        <span class="am-icon-bars"><i class="noti_count am-icon-btn am-danger am-hide" style="width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 20px;
+    position: absolute;
+    top: -3px;
+    right: -9px;"></i></span>
+                    </button>
+
+                    <div class="am-collapse am-topbar-collapse" id="topbar-collapse">
+                    <#content action="category" catid="0" limit="25" order="listorder ASC" cache="3600" var="data">
+                        <ul class="am-nav am-nav-pills am-topbar-nav">
+                            <li><a href="${bc.siteurl()}">首页</a></li>
+                            <!--#for(r in data){-->
+                            <li><a href="${r['url']}">${r['catname']}</a></li>
+                            <!--#}-->
+                        </ul>
+                    </#content>
+
+                        <form action="/search/" method="get" target="_blank"
+                              class="am-topbar-form am-topbar-left am-form-inline" role="search">
+                            <div class="am-form-group">
+                                <input type="text" name="q" id="q" class="am-form-field am-input-sm" placeholder="回车搜索">
+                            </div>
+                        </form>
+
+                        <!--# if(session==null || isEmpty(session.member)){ -->
+                        <div class="am-topbar-right">
+                            <a href="/register" class="am-btn am-btn-primary am-topbar-btn am-btn-sm">注册</a>
+                        </div>
+                        <div class="am-topbar-right">
+                            <a href="/login" class="am-btn am-btn-primary am-topbar-btn am-btn-sm">登录</a>
+                        </div>
+                        <!--# }else{ -->
+                        <div class="am-topbar-right">
+                            <div class="am-dropdown" data-am-dropdown="{boundary: '.am-topbar'}">
+                                <a class="am-btn am-btn-primary am-topbar-btn am-btn-sm am-dropdown-toggle"
+                                        data-am-dropdown-toggle>
+                                    <img src="${bc.thumb(session.member.avatar,25,-1)}" style="width: 25px;">
+                                    <span>${session.member.nickname! session.member.id}</span>
+                                    <span class="am-icon-caret-down"></span>
+                                </a>
+                                <ul class="am-dropdown-content">
+                                    <li><a href="/user/${session.member.id}">我的</a></li>
+                                    <!--
+                                    <li><a href="/user/message">私信</a></li>
+                                    -->
+                                    <li><a href="/user/setting">设置</a></li>
+                                    <li><a href="/logout">退出</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="am-topbar-right" style="position: relative;">
+                            <a href="/user/notification" class="am-btn am-btn-primary am-topbar-btn am-btn-sm">通知<i class="noti_count am-icon-btn am-danger am-hide" style="width: 20px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 20px;
+    position: absolute;
+    top: 6px;
+    right: -6px;"></i></a>
+                        </div>
+                        <!--# } -->
+                    </div>
+                </div>
+            </div>
+        </div>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]>
+<html class="ie ie6" lang="zh"> <![endif]-->
+<!--[if IE 7 ]>
+<html class="ie ie7" lang="zh"> <![endif]-->
+<!--[if IE 8 ]>
+<html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh"> <!--<![endif]-->
+
+<head>
+    <!--#include("/baguaz/content/head.html"){}-->
+    <style type="text/css">
+        em.kw{
+            color: #ff261e;
+        }
+        #sr{
+            padding-top: 20px;
+            font-family: arial;
+        }
+        .ahit{
+            margin: 0px 20px 20px 20px;
+        }
+        .ahit>.title{
+            font-size: 1.0rem;
+            text-decoration: underline;
+            color: #0A0ACE;
+        }
+        .ahit>.content{
+            margin-top: 8px;
+            font-size: 0.8rem;
+        }
+        .ahit:last-child{
+            margin-bottom: 100px;
+        }
+        #pages>*{
+            min-width: 18px !important;
+            height: 34px !important;
+            line-height: 34px !important;
+            font-size: 1.1rem;
+            font-family: 微软雅黑;
+        }
+        #pages>a{
+            color: #095DB1 !important;
+        }
+        #pages>span{
+            border:0px;
+            background: #fff !important;
+            color: #000 !important;
+        }
+    </style>
+</head>
+<body>
+<!-- Start Header -->
+<!--#include("/baguaz/content/top.html"){}-->
+<!-- End Header -->
+
+<div class="container zerogrid">
+    <div class="wrap-col">
+        <div class="widget-container">
+            <form role="search" method="get" id="searchform" class="searchform"
+                  action="/search/">
+                <div>
+                    <label class="screen-reader-text" for="kw">Search for:</label>
+                    <input type="text" name="q" style="width: 69%;" id="q" value="${q!}"/>
+                    <input type="submit" id="searchsubmit" value="搜  索"/>
+                </div>
+            </form>
+            <div class="clear"></div>
+            <div style="color: #A9AAAB;font-size: 0.8rem;padding: 10px 0 0 20px;">${search_tt}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Start Main Container -->
+<div class="container zerogrid">
+    <div class="col-2-3">
+        <div class="wrap-col">
+            <div class="widget-container">
+                <div id="sr">
+                    <!--#
+                        for(hit in search_result){
+                    -->
+                    <div class="ahit">
+                        <a href="${hit.url}" class="title" target="_blank">${hit.title}</a>
+                        <div class="content">${hit.content}</div>
+                    </div>
+                    <!--#
+                        }
+                    -->
+                </div>
+                <!-- Start Pagination -->
+                <div class="spacing-20"></div>
+                <ul class="pagination">
+                    ${pages}
+                </ul>
+                <!-- End Pagination -->
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-1-3">
+        <div class="wrap-col">
+            <div class="widget-container">
+                <h6 class="widget-title">热门</h6>
+                <!-- Start Widget -->
+                <#content action="hits" catid="0" num="6" order="views DESC" cache="3600" var="data">
+                    <ul class="widget-recent-posts">
+                        <!--#for(r in data){-->
+                        <li>
+                            <div class="post-image">
+                                <div class="post-mask"></div>
+                                <img width="70" height="70" src="${bc.thumb(r['thumb'],70,70,false)}"
+                                     class="attachment-post-widget #"/></div>
+                            <h6><a href="${r.url}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],12,'..')}</a></h6>
+                            <span>${bc.datefm(r['inputtime'],'yyyy-MM-dd')}</span>
+                            <div class="clear"></div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                </#content>
+                <!-- End Widget -->
+                <div class="clear"></div>
+            </div>
+            <div class="widget-container">
+                <h6 class="widget-title">最新</h6>
+                <!-- Start Widget -->
+                <#content action="lists" catid="0" cache="3600" num="6" order="inputtime DESC" moreinfo="0" var="data">
+                    <ul class="widget-recent-posts">
+                        <!--#for(r in data){-->
+                        <li>
+                            <div class="post-image">
+                                <div class="post-mask"></div>
+                                <img width="70" height="70" src="${bc.thumb(r['thumb'],70,70,false)}"
+                                     class="attachment-post-widget #"/></div>
+                            <h6><a href="${r.url}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],12,'..')}</a></h6>
+                            <span>${bc.datefm(r['inputtime'],'yyyy-MM-dd')}</span>
+                            <div class="clear"></div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                </#content>
+                <!-- End Widget -->
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Start Footer -->
+<!--#include("/baguaz/content/bottom.html"){}-->
+<!-- End Footer -->
+</body>
+</html>

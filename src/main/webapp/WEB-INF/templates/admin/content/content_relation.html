@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"修改站点",description:"",keywords:""}){}
+     -->
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.datatables.css" type="text/css"/>
+    <style type="text/css">
+    #rdatatable tr{
+        cursor:pointer;
+    }
+    .bgz-selected-r td{
+        background: #4aaa4a !important;
+    }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.datatables.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/dateplus.js"></script>
+    <script type="text/javascript">
+    $(function () {
+        bgz.dteohover($('#rdatatable'))
+
+        window.rdt=$('#rdatatable').DataTable({
+            ordering:false,
+            paging:true,
+            searching:true,
+            stateSave:false,
+            deferRender:false,
+            info:true,
+            columns:[
+                {"data":"title","title":"标题"},
+                {"data":"catname","title":"所属栏目"},
+                {"data":"username","title":"发布人"},
+                {"data":"updatetime","title":"更新时间","render":function(data, type, row){
+                    return new Date(data*1000).format('long');
+                }},
+                {"data":"inputtime","title":"录入时间","render":function(data, type, row){
+                    return new Date(data*1000).format('long');
+                }},
+            ],
+            ajax:{
+                type: "GET",
+                url: '/admin/content/jsonrelatlist?e=${e}',
+                dataSrc:function(ret) {
+                    if (ret.code ==${@C.success}) {
+                        $(".am-datatable-hd>div:first-child").empty()
+                        return bgz.pagedata(ret.map.page);
+                    }
+                }
+            }
+        })
+    });
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <table id="rdatatable" width="100%" class="am-table am-table-striped am-table-bordered am-table-compact am-text-nowrap">
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

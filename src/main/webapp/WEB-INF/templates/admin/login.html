@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <!--#
+        include("/admin/head.html",{title:"登录",description:"",keywords:""}){}
+    -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.slick.css"/>
+    <style type="text/css">
+        .am-form .am-form-group > input {
+            line-height: 1.2rem;
+            font-size: 1.5rem;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/crypto/sha256.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/base64.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/slick.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("form").validator({
+                theme: 'simple_right',
+                fields: {
+                    'username': {
+                        rule: "用户名:required"
+                    },
+                    'password': {
+                        rule: "密码:required"
+                    }
+                },
+                valid: function (form) {
+                    var data = $("form").serializeArray();
+                    _.map(data, function (f) {
+                        if (f.name == 'password') {
+                            f.value = Base64.encode(sha256_digest(sha256_digest($("input[name='username']").val() + f.value) + "${bc_token_daiyc}"));
+                        }
+                    });
+
+                    var me = this;
+                    // 提交表单之前，hold住表单，防止重复提交
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/login",
+                        data: data,
+                        dataType: "json",
+                        success: function (ret) {
+                            if (ret.code ==${@C.success}) {
+                                location.href = "/admin";
+                            } else {
+                                $('.retmsg .n-msg').html(ret.msg)
+                                $('.retmsg').show();
+                            }
+                        },
+                        complete: function (ret) {
+                            me.holdSubmit(false);
+                        }
+                    });
+                }
+            });
+
+            $("form input").on("focusin", function () {
+                $('.retmsg .n-msg').html("")
+                $('.retmsg').hide();
+            })
+
+            $('button').on("click", function () {
+                $('form').trigger("validate");
+            });
+
+            window.onkeydown = function (event) {
+                if (event.keyCode == 13) {
+                    $('button').click();
+                }
+            }
+
+            $('.slider').slick({
+                autoplay: true,
+                accessibility: false,
+                fade: true,
+                arrows: false,
+                lazyLoad: 'progressive',
+                speed: 1000
+            });
+        });
+    </script>
+</head>
+<body>
+<header>
+    <!--#
+    include("/admin/top_login.html"){}
+    -->
+</header>
+<section>
+    <div class="am-g am-g-fixed">
+        <div class="am-u-sm-0 am-u-md-7 am-u-lg-8">
+            <div class="slider">
+                <div>
+                    <div class="image"><img src="${IMG_PATH}/2.jpg"/></div>
+                </div>
+                <div>
+                    <div class="image"><img src="${IMG_PATH}/3.jpg"/></div>
+                </div>
+                <div>
+                    <div class="image"><img src="${IMG_PATH}/4.jpg"/></div>
+                </div>
+            </div>
+        </div>
+        <div class="am-u-sm-12 am-u-md-5 am-u-lg-4">
+            <div class="am-panel am-panel-default">
+                <div class="am-panel-bd">
+                    <form class="am-form">
+                        <fieldset>
+                            <legend>登录</legend>
+                            <div class="am-form-group">
+                                <input placeholder="用户名" name="username" type="text" value=""/>
+                                <span class="msg-box" for="username"></span>
+                            </div>
+                            <div class="am-form-group">
+                                <input placeholder="密码" name="password" type="password" value=""/>
+                            </div>
+                            ${token}
+                            <input type="hidden" name="dosubmit"/>
+
+                            <p>
+                                <button type="submit" class="am-btn am-btn-default am-btn-block">登录</button>
+                            </p>
+                            <!--# if(adminSpeedLogin){ -->
+                            <!--开发便捷登录 begin-->
+                            <p>
+                                <a class="am-btn am-btn-default">admin</a>
+                                <a class="am-btn am-btn-default">daiyc</a>
+                                <script>
+                                    $("form").delegate("a", "click", function () {
+                                        if ($(this).html() == "admin") {
+                                            $("input[name='username']").val("admin")
+                                            $("input[name='password']").val("admin1")
+                                        } else if ($(this).html() == "daiyc") {
+                                            $("input[name='username']").val("daiyc")
+                                            $("input[name='password']").val("admin1")
+                                        }
+                                        $("form").submit();
+                                    })
+                                </script>
+                            </p>
+                            <!--开发便捷登录 end-->
+                            <!--# } -->
+                            <span class="msg-box simple_right retmsg" style="display:none;">
+                                <span class="msg-wrap n-error">
+                                    <span class="n-icon"></span>
+                                    <span class="n-msg"></span>
+                                </span>
+                            </span>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <!--#include("/admin/bottom.html"){}-->
+</footer>
+</body>
+</html>

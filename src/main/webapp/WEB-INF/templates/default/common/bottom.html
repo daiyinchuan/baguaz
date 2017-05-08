@@ -1,0 +1,17 @@
+<p class="info">
+    <#content action="category" catid="21" num="15" order="listorder ASC" cache="3600" var="data">
+    <!--#for(r in data){-->
+        <a href="${r['url']}" target="_blank">${r['catname']}</a> |
+    <!--#}-->
+    </#content>
+    <a href="#" target="_blank">友情链接</a>
+    <#flink num="99" cache="600" order="listorder" var="data">
+    <br/>
+    <!--#for(r in data){-->
+        <a href="${r.url}" target="_blank">${r.name}</a>
+    <!--#}-->
+    </#flink>
+    <br/>
+    Powered by <strong><a href="http://www.baguaz.com" target="_blank">baguaz cms</a></strong>
+    <em>${bc.get_bgz_version()}</em> &copy; 2015 <img src="${IMG_PATH}/copyright.gif"/>
+</p>

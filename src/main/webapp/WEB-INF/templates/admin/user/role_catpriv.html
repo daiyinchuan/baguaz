@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"栏目权限",description:"",keywords:""}){}
+     -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <style type="text/css">
+        .am-form-group > label {
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        input[type='checkbox'] {
+            position: relative;
+            top: 2px;
+            left: 5px;
+        }
+
+        .am-form-group {
+            margin-bottom: 0rem;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var validmsg = "输入正确";
+            $("form").validator({
+                theme: 'simple_bottom',
+                fields: {},
+                valid: function (form) {
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/role/catpriv",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function (ret) {
+                            if (ret.code ==${@C.success}) {
+                                window.top.layer.alert(ret.msg, function (index) {
+                                    window.top.frames[1].datatable.ajax.reload();
+                                    window.top.layer.closeAll();
+                                })
+                            }
+                        },
+                        complete: function (ret) {
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid: function (form, errors) {
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+
+
+            $.each(${roleCatpriv}, function (i, n) {
+                $('input[name="catids"]').filter('[value="' + n + '"]').prop("checked", true)
+            });
+
+
+            $(".am-panel-bd").delegate("input","click",function(e){
+                var isCheck=$(this).prop('checked')?true:false;
+
+                cc($(this),isCheck);
+
+                if(isCheck) {
+                    pp($(this), isCheck);
+                }
+                e.stopPropagation();
+            })
+        });
+        var submitForm = function () {
+            $('form').trigger("validate");
+        }
+
+        var cc=function(ccc,isCheck){
+            var pid=ccc.attr("value");
+            if(!pid){
+                return;
+            }
+            var _this=$("input[parentid='"+pid+"']");
+            _this.prop("checked",isCheck)
+            cc(_this,isCheck);
+        }
+
+        var pp=function(ppp,isCheck){
+            var pid=ppp.attr("parentid");
+            if(!pid){
+                return;
+            }
+            var _this=$("input[value='"+pid+"']");
+            _this.prop("checked",isCheck)
+            pp(_this,isCheck);
+        }
+
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-bottom-0">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-panel am-panel-default" style="overflow: scroll;height: 43rem;margin-bottom: 0;">
+                        <div class="am-panel-bd" style="padding-top: 1rem;padding-bottom: 0;padding-left: 3rem;">
+                            <!--#
+                                for(cat in cats){
+                            -->
+                            <div class="am-form-group">
+                                <label>
+                                    <span>${cat.pos}${cat.catname}</span>
+                                    <input name="catids" value="${cat.catid}" type="checkbox" parentid="${cat.parentid}">
+                                </label>
+                            </div>
+                            <!--#
+                                }
+                            -->
+                        </div>
+                    </div>
+                    <input type="hidden" id="id" name="id" value="${role.id}"/>
+                    <input type="hidden" name="dosubmit"/>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

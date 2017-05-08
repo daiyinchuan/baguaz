@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"添加板块",description:"",keywords:""}){}
+
+         var settingm=@BgzKit.json2obj(setting);
+     -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+            var $template_list=$('select[name="setting[template_list]"]');
+            var $section_template=$('select[name="setting[section_template]"]');
+            var $thread_template=$('select[name="setting[thread_template]"]');
+
+            $template_list.on("change",function(event){
+                if(event.target.value==""){
+                    $section_template.empty().append("<option value>请选择</option>");
+                    $thread_template.empty().append("<option value>请选择</option>");
+                    return;
+                }
+                $.ajax({
+                    type: "GET",
+                    url: "/admin/community/section/tplFileList",
+                    data: {
+                        style:event.target.value,
+                    },
+                    dataType: "json",
+                    success: function(ret){
+                        if(ret.code==${@C.success}){
+                            $section_template.empty();
+                            $thread_template.empty();
+                            var options='<option value>请选择</option>';
+                            $.each(ret.map.sectpllist,function(i,n){
+                                options+='<option value="'+n.name+'">'+n.name+'</option>'
+                            })
+                            $section_template.append(options);
+                            options='<option value>请选择</option>';
+                            $.each(ret.map.thrtpllist,function(i,n){
+                                options+='<option value="'+n.name+'">'+n.name+'</option>'
+                            })
+                            $thread_template.append(options);
+                        }
+                    }
+                });
+            });
+
+            if($template_list.val()!=""){
+                $template_list.trigger("change");
+            }
+
+
+            var validmsg = "输入正确";
+            $("form").validator({
+                theme: 'simple_bottom',
+                rules: {
+                    r_tab: [/^([A-Za-z]|[A-Za-z]+\w*[A-Za-z0-9]+)$/, "标签必须为大小字母、数字、下划线，首字符只能为字母，末字符不可为下划线"],
+                },
+                fields: {
+                    'parentid':{
+                        rule:"上级板块:match[neq, id]",
+                        msg:{
+                            match: "{0}不能选择为本板块"
+                        }
+                    },
+                    'name': {
+                        rule: "名称:required",
+                        ok: validmsg
+                    },
+                    'tab': {
+                        rule: "标签:required,r_tab,remote[/admin/community/section/checktab, id:#id]",
+                        ok: validmsg
+                    }
+                },
+                valid: function (form) {
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/community/section/edit",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function (ret) {
+                            if (ret.code ==${@C.success}) {
+                                window.top.layer.alert(ret.msg, function (index) {
+                                    window.top.frames[1].datatable.ajax.reload();
+                                    window.top.layer.closeAll();
+                                })
+                            }
+                        },
+                        complete: function (ret) {
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid: function (form, errors) {
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+        });
+        var submitForm = function () {
+            $('form').trigger("validate");
+        }
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-sm">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-form-group">
+                        <label for="parentid" class="am-u-sm-3 am-form-label">上级板块：</label>
+
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <select name="parentid">
+                                <option value="0" selected>≡ 作为一级板块 ≡</option>
+                                <!--#
+                                    for(sec in seclist){
+                                        if(parentid==sec.id){
+                                            print('<option selected value="'+sec.id+'">'+sec.pos+sec.name+'</option>');
+                                        }else{
+                                            print('<option value="'+sec.id+'">'+sec.pos+sec.name+'</option>');
+                                        }
+                                    }
+                                -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="name" class="am-u-sm-3 am-form-label">名称：</label>
+
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="name" type="text" value="${name}" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="tab" class="am-u-sm-3 am-form-label">标签：</label>
+
+                        <div class="am-u-sm-3 am-u-end am-padding-0">
+                            <input name="tab" type="text" value="${tab}" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="isdisplay" class="am-u-sm-3 am-form-label">是否显示：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <label class="am-radio-inline">
+                                <input type="radio" name="isdisplay" value="1" <!--# if(isdisplay==1){print("checked");} -->/> 是
+                            </label>
+                            <label class="am-radio-inline">
+                                <input type="radio" name="isdisplay" value="0" <!--# if(isdisplay==0){print("checked");} -->> 否
+                            </label>
+                        </div>
+                    </div>
+                    <div class="am-panel am-panel-default">
+                        <div class="am-panel-hd">URL规则</div>
+                        <div class="am-panel-bd">
+                            <div class="am-form-group">
+                                <label for="setting[section_ruleid]" class="am-u-sm-3 am-form-label">板块页URL规则：</label>
+
+                                <div class="am-u-sm-6 am-u-end am-padding-0">
+                                    <select name="setting[section_ruleid]">
+                                        <!--#
+                                            for(ur in secSelUrList){
+                                                if(settingm.section_ruleid==ur.id){
+												    print('<option selected value="'+ur.id+'">'+ur.example+'</option>');
+												}else{
+                                                    print('<option value="'+ur.id+'">'+ur.example+'</option>');
+                                                }
+                                            }
+                                        -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="setting[thread_ruleid]" class="am-u-sm-3 am-form-label">话题页URL规则：</label>
+
+                                <div class="am-u-sm-6 am-u-end am-padding-0">
+                                    <select name="setting[thread_ruleid]">
+                                        <!--#
+                                            for(ur in thrSelUrList){
+                                                if(settingm.thread_ruleid==ur.id){
+												    print('<option selected value="'+ur.id+'">'+ur.example+'</option>');
+												}else{
+                                                    print('<option value="'+ur.id+'">'+ur.example+'</option>');
+                                                }
+                                            }
+                                        -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="am-panel am-panel-default">
+                        <div class="am-panel-hd">模板设置</div>
+                        <div class="am-panel-bd">
+                            <div class="am-form-group">
+                                <label for="setting[template_list]" class="am-u-sm-3 am-form-label">可用风格：</label>
+
+                                <div class="am-u-sm-6 am-u-end am-padding-0">
+                                    <select name="setting[template_list]">
+                                        <option value="" selected>请选择</option>
+                                        <!--#
+                                            for(tpl in templatelist){
+                                                if(settingm.template_list==tpl.dirname){
+                                                    print('<option selected value="'+tpl.dirname+'">'+tpl.name+'</option>');
+                                                }else{
+                                                    print('<option value="'+tpl.dirname+'">'+tpl.name+'</option>');
+                                                }
+                                            }
+                                        -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="setting[section_template]" class="am-u-sm-3 am-form-label">板块页模板：</label>
+
+                                <div class="am-u-sm-6 am-u-end am-padding-0">
+                                    <select name="setting[section_template]">
+                                        <option value="" selected>请选择</option>
+                                        <!--#
+                                            for(tpl in sectpllist){
+                                                if(settingm.section_template==tpl.name){
+                                                    print('<option selected value="'+tpl.name+'">'+tpl.name+'</option>');
+                                                }else{
+                                                    print('<option value="'+tpl.name+'">'+tpl.name+'</option>');
+                                                }
+                                            }
+                                        -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="setting[thread_template]" class="am-u-sm-3 am-form-label">话题页模板：</label>
+
+                                <div class="am-u-sm-6 am-u-end am-padding-0">
+                                    <select name="setting[thread_template]">
+                                        <option value="" selected>请选择</option>
+                                        <!--#
+                                            for(tpl in thrtpllist){
+                                                if(settingm.thread_template==tpl.name){
+                                                    print('<option selected value="'+tpl.name+'">'+tpl.name+'</option>');
+                                                }else{
+                                                    print('<option value="'+tpl.name+'">'+tpl.name+'</option>');
+                                                }
+                                            }
+                                        -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="am-panel am-panel-default">
+                        <div class="am-panel-hd">SEO设置</div>
+                        <div class="am-panel-bd">
+                            <div class="am-form-group">
+                                <label for="setting[meta_title]" class="am-u-sm-3 am-form-label">
+                                    META Title
+                                    <p>(针对搜索引擎设置的标题)</p>
+                                </label>
+
+                                <div class="am-u-sm-9 am-u-end am-padding-left-0 am-padding-top-sm">
+                                    <input name="setting[meta_title]" value="${settingm.meta_title}" type="text"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="setting[meta_keywords]" class="am-u-sm-3 am-form-label">
+                                    META Keywords
+                                    <p>(关键字中间用半角逗号隔开)</p>
+                                </label>
+
+                                <div class="am-u-sm-9 am-u-end am-padding-0">
+                                    <textarea name="setting[meta_keywords]" rows="5" cols="30">${settingm.meta_keywords}</textarea>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="setting[meta_description]" class="am-u-sm-3 am-form-label">
+                                    META Description
+                                    <p>(针对搜索引擎设置的网页描述)</p>
+                                </label>
+
+                                <div class="am-u-sm-9 am-u-end am-padding-0">
+                                    <textarea name="setting[meta_description]" rows="5" cols="30">${settingm.meta_description}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="id" name="id" value="${id}"/>
+                    <input type="hidden" name="dosubmit"/>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

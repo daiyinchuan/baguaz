@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        include("/default/common/head_community.html"){}
+    -->
+    <link rel="stylesheet" href="${CSS_PATH}/commun.css" type="text/css"/>
+    <style type="text/css">
+        .am-list>.readed{
+            background: #eee;
+        }
+        ul.topic-ul.am-list>li{
+            padding: 0.5rem 2rem;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function(){
+            $(".topic-ul").delegate("li","click",function(){
+                var $me=$(this);
+                if($me.hasClass("readed")){
+                    return;
+                }
+                $.ajax({
+                    type: "GET",
+                    url: "/notification/doRead/"+$me.attr("id"),
+                    dataType: "json",
+                    success: function(ret){
+                        if(ret.code==${@C.success}){
+                            $me.addClass("readed")
+                        }
+                    }
+                });
+            })
+        })
+
+    </script>
+</head>
+<body>
+<header>
+    <!--#include("/default/common/top_community.html"){}-->
+</header>
+<section class="commu-secstyle">
+    <div class="am-g am-g-fixed">
+        <div class="am-u-md-2 am-u-sm-0 am-padding-xs">
+            <!--#include("/default/common/sub_user.html",{sub:"notification"}){}-->
+        </div>
+        <div class="am-u-md-10 am-u-sm-12 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    通知
+                </div>
+                <div class="am-panel-bd" style="padding: 0;">
+                    <ul class="am-list topic-ul">
+                        <!--#
+                            for(noti in notifis.list){
+                                if(noti.isread==1){
+                        -->
+                        <li class="readed">
+                        <!--# }else{ -->
+                        <li id="${noti.id}">
+                        <!--# } -->
+                            <a class="am-inline-block" target="_blank" href="/user/${noti.from_authorid}">${noti.nickname}</a>
+                            <span>${bc.datehuman(noti.inputtime)}</span>
+                            <span>${noti.action}</span>
+                            <a class="am-inline-block" target="_blank" href="${noti.targetid}">${noti.content}</a>
+                        </li>
+                        <!--# } -->
+                    </ul>
+                    <ul class="am-pagination" style="margin-top: 0;padding: 0.5rem 2rem;">
+                        ${pages}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <!--#include("/default/common/bottom_community.html"){}-->
+</footer>
+</body>
+</html>

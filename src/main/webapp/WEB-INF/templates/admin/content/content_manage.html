@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <!--#
+        include("/admin/head.html",{title:"内容列表",description:"",keywords:""}){}
+    -->
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.datatables.css" type="text/css"/>
+    <style type="text/css">
+        table.dataTable thead > tr > th{
+            padding-right: 0;
+            padding-left: 0;
+            text-align: center;
+        }
+        table.dataTable td{
+            padding-right: 0;
+            padding-left: 0;
+            text-align: center;
+        }
+        table.dataTable .am-btn{
+            padding: 0 0.5em;
+        }
+        th.aaa{
+            height:25px;
+            width:40px
+        }
+        th.aaa input{
+            margin: 0;
+        }
+        td.aaa input{
+            text-align: center;
+            width: 40px;
+        }
+        td.bbb{
+            text-align: center;
+            width: 56px;
+        }
+        table.dataTable td.ccc{
+            padding-left:1em;
+            width:425px;
+            text-align: left;
+        }
+        td.ddd{
+            text-align: center;
+            width:88px
+        }
+        td.eee{
+            text-align: center;
+            width:168px
+        }
+        td.fff{
+            text-align: center;
+            width:88px
+        }
+
+        .am-datatable-footer>div:first-child>div{
+            display:inline-block;
+        }
+        .am-datatable-footer>div:first-child>div:last-child{
+            margin: -5px 0 0 5px;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.datatables.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/dateplus.js"></script>
+    <script type="text/javascript">
+        $(function() {
+        	var $catmenu=parent.$("#ifrm_catmenu");
+    <!--#
+        if(!isEmpty(catmenuReInit)){
+        	if(catmenuReInit){
+    -->
+    		$catmenu.attr("src","/admin/content/catmenu");
+            parent.$(".cmpost").html("");
+    <!--#
+        	}else{
+	-->
+			if($catmenu.attr("src")==""){
+				$catmenu.attr("src","/admin/content/catmenu");
+				parent.$(".cmpost").html("");
+			}
+	<!--#
+        	}
+        }else{
+    -->
+            bgz.dteohover($('#cldatatable'))
+
+            window.cldt=$('#cldatatable').DataTable({
+                ordering:false,
+                paging:true,
+                searching:true,
+                stateSave:true,
+                deferRender:true,
+                info:true,
+                columns:[
+                    {"data":"checkbox",
+                        "title":'<input class="am-checkbox-inline" id="checkAll" type="checkbox">',
+                        "render":function(data, type, row){
+                        return '<input class="am-checkbox-inline" name="delcheck" value="'+row.id+'" type="checkbox">'
+                    },className:"aaa"},
+                    {"data":"listorder","title":'排序<i class="am-icon-info-circle" title="越大排越前面" style="vertical-align: super;"></i>',"render":function(data, type, row){
+                        return '<input type="text" name="listorders['+row.id+']" value="'+data+'" />'
+                    },className:"aaa"},
+                    {"data":"id","title":"ID",className:"bbb"},
+                    {"data":"title","title":"标题","render": function (data,type,row) {
+                        var ret='<a class="am-btn am-btn-xs" target="_blank" href="'+row.url+'">'+data+'</a>';
+                        if(row.posids==1){
+                            ret+='<img src="${IMG_PATH}/icon/small_elite.gif" title="推荐"/>';
+                        }
+                        return ret;
+                    },className:"ccc"},
+                    {"data":"username","title":"发布人",className:"ddd"},
+                    {"data":"updatetime","title":"更新时间","render":function(data, type, row){
+                        return new Date(data*1000).format('long');
+                    },className:"eee"},
+                    {"data":"mngopt","title":"管理操作","render":function(data, type, row){
+                        var editA='<a class="am-btn am-btn-xs" href="javascript:editOpt('+row.catid+','+row.id+')">修改</a>';
+                        return editA
+                    },className:"fff"}
+                ],
+                ajax:{
+                    type: "GET",
+                    url: '/admin/content/jsonlist?catid=${catid}',
+                    dataSrc: function(ret) {
+                        if(ret.code==${@C.success}){
+                            return bgz.pagedata(ret.map.page);
+                        }
+                    },
+                    error:function(ret){
+                        if(ret.status==403){
+                            location.href=ret.statusText;
+                        }
+                    }
+                }
+            });
+
+            $('#checkAll').on("click",function(){
+                if($(this).prop("checked")){
+                    $('input[name="delcheck"]').prop("checked",true)
+                }else{
+                    $('input[name="delcheck"]').prop("checked",false)
+                }
+            })
+
+            var delBtn='<button type="button" id="delBtn" class="am-btn am-btn-default am-btn-xs">删除</button>';
+            var sortBtn='<button type="submit" name="dosubmit" id="sortBtn" class="am-btn am-btn-default am-btn-xs">排序</button>';
+            $('#cldatatable_info').before('<div>'+delBtn+'&nbsp;'+sortBtn+'</div>');
+
+            $('.am-datatable-footer').delegate("#delBtn","click",function(){
+                var ss=$('input[name="delcheck"]').serialize();
+                if(ss==""){
+                    window.top.layer.alert("必须选中至少一个");
+                    return;
+                }
+                window.top.layer.confirm("确认删除吗？",function(index){
+                    window.top.layer.close(index)
+                    location.href="/admin/content/del?catid=${catid}&"+ss
+                }, function (index) {
+                    window.top.layer.close(index)
+                })
+            });
+    <!--#
+        }
+    -->
+        });
+
+        var editOpt=function(catid,id){
+            bgz.openwinx('/admin/content/edit?catid='+catid+'&id='+id,'');
+        }
+    </script>
+</head>
+<body style="width:99%;">
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+    <!--#
+        if(isEmpty(catmenuReInit)){
+    -->
+            <ul class="am-nav am-nav-pills">
+                <li><a target="_blank" href="javascript:bgz.openwinx('/admin/content/add?catid=${catid}','')">添加内容</a></li>
+            </ul>
+    <!--#
+        }
+    -->
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+    <!--#
+        if(isEmpty(catmenuReInit)){
+    -->
+            <form method="post" action="/admin/content/listorder?catid=${catid}">
+                <fieldset>
+                    <table id="cldatatable" width="100%" class="am-table am-table-striped am-table-bordered am-table-compact am-text-nowrap">
+                    </table>
+                </fieldset>
+            </form>
+    <!--#
+        }
+    -->
+        </div>
+    </div>
+</section>
+</body>
+</html>

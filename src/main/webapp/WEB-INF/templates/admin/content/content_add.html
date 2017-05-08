@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <!--#
+        include("/admin/head.html",{title:"添加内容",description:"",keywords:""}){}
+    -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${JS_PATH}/kindeditor/themes/default/default.css" type="text/css"/>
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.datetimepicker.css" type="text/css"/>
+    <style type="text/css">
+        .am-list > li{
+            padding: 5px;
+        }
+        .am-list > li > a{
+            display: inline-block;
+            position: absolute;
+            right: 2px;
+            bottom: 5px;
+            padding: 0;
+        }
+        form .msg-box{
+            display: none;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" charset="utf-8" src="${JS_PATH}/kindeditor/kindeditor-all.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.datetimepicker.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.datetimepicker.zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/layer/layer.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var options = {
+                fileManagerJson: "/admin/attachment/manager",
+                allowFileManager: true,
+                uploadJson: "/admin/attachment/upload",
+                filterMode: false,
+                bodyStyle:{'height' : 'auto','overflow' : 'initial'},
+            };
+            KindEditor.ready(function (K) {
+                window.editor1 = K.create('textarea[name="content"]', options);
+
+                var editor = K.editor(options);
+
+                $('.uploadBtn').click(function () {
+                    editor.loadPlugin('image', function () {
+                        editor.plugin.imageDialog({
+                            clickFn: function (url, title, width, height, border, align) {
+                                $('.uploadBtn>img').attr("src",url);
+                                $('input[name="thumb"]').val(url);
+                                editor.hideDialog();
+                            }
+                        });
+                    });
+                });
+
+                $('.gimageBtn').click(function () {
+                    editor.loadPlugin('image', function () {
+                        editor.plugin.imageDialog({
+                            clickFn: function (url, title, width, height, border, align) {
+                                $(".gimage").append('<div><input type="text" name="gimage_url" value="'+url+'" />'
+                                        +'<input type="text" name="gimage_desc" value="'+title+'" />'
+                                        +'<button type="button" class="am-btn am-btn-default am-btn-xs">移除</button></div>')
+                                editor.hideDialog();
+                            }
+                        });
+                    });
+                });
+
+                $('.gfileBtn').click(function () {
+                    editor.loadPlugin('insertfile', function () {
+                        editor.plugin.fileDialog({
+                            clickFn: function (url, title) {
+                                if(url==title){
+                                    title=""
+                                }
+                                $(".gfile").append('<div><input type="text" name="gfile_url" value="'+url+'" />'
+                                        +'<input type="text" name="gfile_desc" value="'+title+'" />'
+                                        +'<button type="button" class="am-btn am-btn-default am-btn-xs">移除</button></div>')
+                                editor.hideDialog();
+                            }
+                        });
+                    });
+                });
+
+                $('.gaudioBtn').click(function () {
+                    editor.loadPlugin('media', function () {
+                        editor.plugin.media.edit({
+                            clickFn: function (url,width,height,autostart) {
+                                $(".gaudio").append('<div><input type="text" name="gaudio_url" value="'+url+'" />'
+                                        +'<input type="text" name="gaudio_desc" value="" />'
+                                        +'<button type="button" class="am-btn am-btn-default am-btn-xs">移除</button></div>')
+                                editor.hideDialog();
+                            }
+                        });
+                    });
+                });
+
+                $('.gvideoBtn').click(function () {
+                    editor.loadPlugin('media', function () {
+                        editor.plugin.media.edit({
+                            clickFn: function (url,width,height,autostart) {
+                                $(".gvideo").append('<div><input type="text" name="gvideo_url" value="'+url+'" />'
+                                        +'<input type="text" name="gvideo_desc" value="" />'
+                                        +'<button type="button" class="am-btn am-btn-default am-btn-xs">移除</button></div>')
+                                editor.hideDialog();
+                            }
+                        });
+                    });
+                });
+
+                $('.gxx').delegate('button',"click",function(){
+                    $(this).prev().prev().remove()
+                    $(this).prev().remove()
+                    $(this).remove()
+                })
+            });
+
+            $("#genDesc").on("click",function(){
+            	bgz.strlen_cut($('textarea[name="description"]')[0],editor1.text(),"description_len",255);
+            	$('textarea[name="description"]').trigger("keyup")
+            })
+
+            subswitch();
+
+            $('#cancelthumb').on("click",function(){
+                $('.uploadBtn>img').attr("src","${IMG_PATH}/icon/upload-pic.png");
+                $('input[name="thumb"]').val("");
+            })
+
+            $('#addrelation').on("click",function(){
+                window.top.layer.open({
+                    title :'添加相关文章',
+                    type:2,
+                    shadeClose: true,
+                    area: ['800px', '500px'],
+                    content:"/admin/content/gotoRelation",
+                    success:function(layero,index){
+                        var $cfbody =bgz.getChildFrame(index);
+                        var iframeWin =bgz.iframeWin(layero);
+                        $cfbody.find("#rdatatable tbody").delegate("tr","click",function(){
+                            var rowdata=iframeWin.rdt.rows(this).data()[0];
+                            if($(this).hasClass('bgz-selected-r')){//去掉
+                                $('#relation_text').children('#r'+rowdata.id).remove()
+                                $(this).removeClass('bgz-selected-r')
+                            }else{//添加
+                                if(!$('#relation_text').children('#r'+rowdata.id).is('li')){
+                                    var _li = '<li id="r' + rowdata.id + '"><span>' + rowdata.title + '</span><a href="javascript:void(0);"><i class="am-icon-close"></i></a></li>';
+                                    $('#relation_text').append(_li)
+                                }
+                                $(this).addClass('bgz-selected-r')
+                            }
+                        })
+                    }
+                })
+            });
+
+            $('.form_inputtime').datetimepicker({
+                format:'yyyy-mm-dd hh:ii:ss',
+                language:  'zh-CN',
+                pickerPosition: 'bottom-left',
+                autoclose: true,
+                todayBtn: true,
+            })
+
+            $('#closeWin').on("click",function(){
+                window.close();
+            })
+
+            $('#preview').on("click",function(){
+                $('form').data("autoSubmit",true);
+                $('#submitBtn').trigger("click")
+                $('form').data("autoSubmit",false);
+            })
+
+            $('#ifrm_preview').on("load",function(){
+                this.height=150+"px";
+                bgz.ifrmAutoHeight(this);
+                $(window).smoothScroll({position: $('#preFiled').offset().top,speed: 3000});
+            })
+
+            $("form").validator({
+                theme: 'simple_right',
+                timely: 0,
+                stopOnError:true,
+                fields:{
+                    'title':{
+                        rule:"标题:required",
+                    },
+                    'content':{
+                        rule:"内容:required",
+                    }
+                },
+                valid: function(form){
+                    var me = this;
+                    // 提交表单之前，hold住表单，防止重复提交
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/content/add",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.scs_dataadd}){
+                                window.top.layer.alert(ret.msg,function(index){
+                                    opener.cldt.ajax.reload();
+                                    window.close();
+                                })
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid:function(form,errors){
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+
+            $('#submitBtn').on("click",function(event){
+                editor1.sync();
+
+                var rtappe="";
+                $('#relation_text>li').each(function(){
+                    rtappe+=$(this).attr("id").substr(1)+"|"
+                })
+                if(rtappe!=""){
+                    $('input[name="relation"]').val(rtappe.substr(0,rtappe.length-1));
+                }
+
+                $('input[name="copyfrom"]').val($('#copyfrom_text').val()+"|"+$('#copyfrom_select').val());
+
+                $('form').trigger("submit");
+            });
+        });
+
+        var subswitch=function(){
+            var sub_switch='<div class="sub_switch am-btn am-btn-default am-radius am-vertical-align am-text-center">\
+						        <i class="am-icon-caret-right am-vertical-align-middle"></i>\
+						        <i class="am-icon-caret-left am-vertical-align-middle am-hide"></i>\
+					        </div>';
+            var $main=$("#ca-main");
+            $main.append(sub_switch);
+            var $sub=$("#ca-sub");
+            $(".sub_switch").on("click", function(){
+                if($sub.hasClass("am-hide")){
+                    $sub.removeClass("am-hide");
+                    $main.removeClass("am-u-sm-12").addClass("am-u-sm-10");
+                    $(this).find(".am-icon-caret-left").addClass("am-hide");
+                    $(this).find(".am-icon-caret-right").removeClass("am-hide");
+                }else{
+                    $sub.addClass("am-hide");
+                    $main.removeClass("am-u-sm-10").addClass("am-u-sm-12");
+                    $(this).find(".am-icon-caret-right").addClass("am-hide");
+                    $(this).find(".am-icon-caret-left").removeClass("am-hide");
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-container">
+        <div class="am-padding-sm">
+            <i class="am-icon-home am-icon-sm"></i>
+            <span>当前位置：</span>
+            <span class="curpos">内容 > 内容发布管理 > 添加内容</span>
+        </div>
+    </div>
+    <form class="am-form am-form-horizontal" method="post" action="/admin/content/preview?catid=${catid}" target="ifrm_preview">
+        <fieldset style="padding-bottom: 1rem;">
+            <div class="am-g am-g-fixed" style="border-top: 1px solid #E6E6E6;border-bottom: 1px solid #E6E6E6;">
+                <div id="ca-main" class="am-u-sm-10 am-padding-right-xs am-padding-left-0" style="padding-top: 1.0rem;border-right: 7px solid #ffffff">
+                    <div class="am-form-group">
+                        <label for="catid" class="am-u-sm-2 am-form-label">栏目</label>
+
+                        <div class="am-u-sm-4 am-u-end am-padding-0">
+                            <input name="catid" type="hidden" value="${catid}"/>
+                            <span class="am-padding-top-xs am-fl">${catname}</span>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="title" class="am-u-sm-2 am-form-label">
+                            <span style="color: red">*</span>
+                            标题
+                        </label>
+
+                        <div class="am-u-sm-7 am-padding-0">
+                            <input name="title" type="text" onkeyup="bgz.strlen_verify(this, 'title_len', 80)"/>
+                        </div>
+                        <div class="am-u-sm-3 am-u-end am-padding-left-xs am-padding-top-xs">
+                            还可以输入<b><span id="title_len">80</span></b>字符
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="keywords" class="am-u-sm-2 am-form-label">关键词</label>
+
+                        <div class="am-u-sm-6 am-padding-0">
+                            <input name="keywords" class="am-inline-block" type="text"/>
+                        </div>
+                        <div class="am-u-sm-3 am-u-end am-padding-left-xs am-padding-top-xs">
+                            关键词中间用半角逗号隔开
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="copyfrom" class="am-u-sm-2 am-form-label">来源</label>
+
+                        <div class="am-u-sm-5 am-padding-0">
+                            <input type="hidden" name="copyfrom">
+                            <input type="text" id="copyfrom_text">
+                        </div>
+                        <div class="am-u-sm-4 am-u-end am-padding-left-xs">
+                            <select id="copyfrom_select" style="width: inherit;">
+                                <option value="0" selected>请选择</option>
+                                <!--#
+                                    for(cf in copyfromList){
+                                -->
+                                <option value="${cf.id}">${cf.name}</option>
+                                <!--#
+                                    }
+                                -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="description" class="am-u-sm-2 am-form-label">摘要</label>
+
+                        <div class="am-u-sm-10 am-u-end am-padding-0">
+                            <textarea name="description" rows="5" cols="30" onkeyup="bgz.strlen_verify(this, 'description_len', 255)"></textarea>
+                            还可以输入<b><span id="description_len">255</span></b>字符
+                            </br>
+                            <button type="button" id="genDesc" class="am-btn am-btn-default am-btn-xs">根据内容生成摘要</button>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="content" class="am-u-sm-2 am-form-label am-padding-left-0">
+                            <span style="color: red">*</span>
+                        内容</label>
+
+                        <div class="am-u-sm-10 am-u-end am-padding-0">
+                            <textarea name="content" style="width:100%;height:300px;"></textarea>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="gimage" class="am-u-sm-2 am-form-label ">组图</label>
+                        <div class="am-u-sm-10 am-u-end am-padding-0">
+                            <div class="am-panel am-panel-default">
+                                <div class="am-panel-hd">图片列表</div>
+                                <div class="am-panel-bd gxx gimage">
+                                    <!--<div>您最多可以同时上传<color style="color:red">50</color>张</div>-->
+                                </div>
+                            </div>
+                            <button type="button" class="gimageBtn am-btn am-btn-default am-btn-xs">选择图片</button>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="gfile" class="am-u-sm-2 am-form-label ">组文件</label>
+                        <div class="am-u-sm-10 am-u-end am-padding-0">
+                            <div class="am-panel am-panel-default">
+                                <div class="am-panel-hd">文件列表（供下载）</div>
+                                <div class="am-panel-bd gxx gfile">
+                                </div>
+                            </div>
+                            <button type="button" class="gfileBtn am-btn am-btn-default am-btn-xs">选择文件</button>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="gaudio" class="am-u-sm-2 am-form-label ">组音频</label>
+                        <div class="am-u-sm-10 am-u-end am-padding-0">
+                            <div class="am-panel am-panel-default">
+                                <div class="am-panel-hd">音频列表</div>
+                                <div class="am-panel-bd gxx gaudio">
+                                </div>
+                            </div>
+                            <button type="button" class="gaudioBtn am-btn am-btn-default am-btn-xs">选择音频</button>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="gvideo" class="am-u-sm-2 am-form-label ">组视频</label>
+                        <div class="am-u-sm-10 am-u-end am-padding-0">
+                            <div class="am-panel am-panel-default">
+                                <div class="am-panel-hd">视频列表</div>
+                                <div class="am-panel-bd gxx gvideo">
+                                </div>
+                            </div>
+                            <button type="button" class="gvideoBtn am-btn am-btn-default am-btn-xs">选择视频</button>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="posids" class="am-u-sm-2 am-form-label am-padding-left-0">推荐位</label>
+
+                        <div class="am-u-sm-10 am-u-end am-padding-0">
+                    <!--#
+                        for(pos in posList){
+                    -->
+                            <label class="am-checkbox-inline bgz-checkbox-inline">
+                                <input name="posids" type="checkbox" value="${pos.id}">
+                                ${pos.name}
+                            </label>
+                    <!--#
+                        }
+                    -->
+                        </div>
+                    </div>
+                </div>
+                <div id="ca-sub" class="bgz-form-block am-u-sm-2 am-padding-left-xs am-padding-right-0">
+                    <div class="am-form-group">
+                        <label for="thumb" class="am-form-label">缩略图</label>
+                        <input type="hidden" name="thumb">
+                        <a class="uploadBtn uploadthumb" href="javascript:void(0);">
+                            <img src="${IMG_PATH}/icon/upload-pic.png" width="135px" height="113px">
+                        </a>
+                        <button id="cancelthumb" type="button" class="am-btn am-btn-default am-btn-xs am-margin-top-xs am-center">取消图片</button>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="template" class="am-form-label">内容模板</label>
+                        <select name="template">
+                            <option value="" selected>请选择</option>
+                            <!--#
+                            for(tpl in showtpllist){
+                            -->
+                            <option value="${tpl.name}">${tpl.name}</option>
+                            <!--#
+                            }
+                            -->
+                        </select>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="inputtime" class="am-form-label">发布时间</label>
+                        <div class="am-input-group date form_inputtime">
+                            <input type="text" name="inputtime" class="am-form-field" value="${inputtime}" readonly>
+                            <span class="am-input-group-label add-on am-text-xs"><i class="icon-th am-icon-calendar"></i></span>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="relation" class="am-form-label">相关文章</label>
+                        <input type="hidden" name="relation">
+                        <ul id="relation_text" class="am-list"></ul>
+                        <button id="addrelation" type="button" class="am-btn am-btn-default am-btn-xs am-margin-top-xs am-center">添加相关</button>
+                    </div>
+                </div>
+            </div>
+            <div class="am-container" style="position: fixed;top: 0;max-width: none;left:0;z-index: 3">
+                <div class="am-form-group am-text-right" style="margin-bottom: 0.5rem;margin-right: 10rem;">
+                    <input type="hidden" name="type" value="0"/>
+                    <input type="hidden" name="dosubmit"/>
+                    <div style="background: transparent;
+    display: inline-block;
+    padding: 3px 18px 4px 18px;
+    background-color: rgba(216,229,216,0.5);">
+                        <button type="button" id="submitBtn" class="am-btn am-btn-default am-btn-xs">提交</button>
+                        <button type="button" id="closeWin" class="am-btn am-btn-default am-btn-xs">关闭</button>
+                        <button type="button" id="preview" class="am-btn am-btn-default am-btn-xs">预览</button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+    <div class="am-container">
+        <div class="am-u-sm-3 am-u-sm-centered am-text-center am-text-lg am-padding-bottom-xs" id="preFiled">预览区域</div>
+    </div>
+    <div class="am-g" style="border-top: 1px solid #E6E6E6;">
+        <iframe id="ifrm_preview" name="ifrm_preview"></iframe>
+    </div>
+</section>
+</body>
+</html>

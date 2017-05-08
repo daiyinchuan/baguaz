@@ -1,0 +1,27 @@
+        <div class="am-g am-g-fixed" style="border-top: 1px solid #E6E1E1;padding-top: 0.5rem;">
+            <div class="am-u-sm-12">
+                <span>友情链接:</span>
+            <#flink num="99" cache="600" order="listorder" var="data">
+                <style>
+                    #flink-ul.am-list > li{
+                        display: inline-block;
+                        border:0px;
+                        margin-left: 5px;
+                    }
+                </style>
+                <ul id="flink-ul" class="am-list" style="display: inline;">
+                <!--#for(r in data){-->
+                    <li><a href="${r.url}" target="_blank">${r.name}</a></li>
+                <!--#}-->
+                    <!--
+                    <li><a class="am-text-truncate">每个人都有一个死角， 自己走不出来，别人也闯不进去。我把最深沉的秘密放在那里。每个人都有一道伤口， 或深或浅，盖上布，以为不存在。</a>
+                    -->
+                </ul>
+            </#flink>
+            </div>
+        </div>
+        <div class="am-g am-g-fixed">
+            <div class="am-u-sm-12 am-u-sm-centered">
+                <p class="am-text-xs am-text-center">Copyright © 2015-2016 daiyinchuan. All Rights Reserved.</p>
+            </div>
+        </div>

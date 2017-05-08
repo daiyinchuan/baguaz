@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>返回消息</title>
+    <script type="text/javascript">
+        (function(){
+            window.top.layer.alert('${ret.msg}',function(index){
+                window.top.layer.close(index)
+                location.href='${ret.rdurl}';
+            });
+        })();
+    </script>
+</head>
+<body>
+
+</body>
+</html>

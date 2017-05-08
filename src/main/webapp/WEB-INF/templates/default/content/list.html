@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#include("/default/common/head.html"){}-->
+</head>
+<body>
+<!--#include("/default/common/top.html"){}-->
+<div class="main">
+    <div class="col-left">
+        <div class="crumbs"><a href="${bc.siteurl()}">首页</a><span> > </span>${bc.catpos(CAT.catid)} 列表</div>
+        <#content action="lists" catid="${CAT.catid}" cache="60" num="5" order="id DESC" moreinfo="0" page="${page}" var="data,pages">
+        <ul class="list lh24 f14">
+            <!--#for(r in data){-->
+            <li>
+                <span class="rt">${bc.datefm(r['inputtime'])}</span>
+                <a href="${r['url']}" target="_blank">${r['title']}</a>
+                <div>${r['description']}</div>
+            </li>
+                <!--#if(rLP.index%5==0){-->
+            <li class="bk20 hr"></li>
+            <!--#
+                    }
+                }
+            -->
+        </ul>
+        <div id="pages" class="text-c">${pages}</div>
+        </#content>
+    </div>
+    <div class="col-auto">
+        <div class="box">
+            <h5 class="title-2">频道总排行</h5>
+            <#content action="hits" catid="${CAT.catid}" num="10" order="views DESC" cache="60" var="data">
+            <ul class="content digg">
+                <!--#for(r in data){-->
+                <li><a href="${r['url']}" target="_blank">${r['title']}</a></li>
+                <!--#}-->
+            </ul>
+            </#content>
+        </div>
+        <div class="bk10"></div>
+        <div class="box">
+            <h5 class="title-2">频道本月排行</h5>
+            <#content action="hits" catid="${CAT.catid}" num="8" order="monthviews DESC" cache="60" var="data">
+            <ul class="content rank">
+                <!--#for(r in data){-->
+                <li>
+                    <span>${r['monthviews']}</span>
+                    <a href="${r['url']}" class="title" title="${r['title']}">${bc.str_cut(r['title'],56,'...')}</a>
+                </li>
+                <!--#}-->
+            </ul>
+            </#content>
+        </div>
+    </div>
+</div>
+<div class="footer">
+    <!--#include("/default/common/bottom.html"){}-->
+</div>
+</body>
+</html>

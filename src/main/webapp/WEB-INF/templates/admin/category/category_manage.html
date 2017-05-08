@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+	<!--#
+		include("/admin/head.html",{title:"栏目管理",description:"",keywords:""}){}
+    -->
+	<link rel="stylesheet" href="${CSS_PATH}/amazeui.datatables.css" type="text/css"/>
+	<style type="text/css">
+		table.dataTable > thead > tr > th{
+			padding-right: 0;
+			padding-left: 0;
+			text-align: center;
+		}
+
+		table.dataTable .am-btn{
+			padding: 0 0.5em;
+		}
+
+		th.aaa{
+			height:25px;
+			width:40px
+		}
+		td.aaa input{
+			text-align: center;
+			width: 40px;
+		}
+		td.bbb{
+			text-align: center;
+			width: 56px;
+		}
+		table.dataTable td.ccc{
+			padding-left:1em;
+			width:325px
+		}
+		td.ddd{
+			text-align: center;
+			width:68px
+		}
+		td.eee{
+			text-align: center;
+			width:88px
+		}
+		td.fff{
+			text-align: center;
+		}
+	</style>
+	<script type="text/javascript" src="${JS_PATH}/amazeui.datatables.js"></script>
+	<script type="text/javascript" src="${JS_PATH}/dataTables.responsive.min.js"></script>
+    <script type="text/javascript">
+    $(function() {
+		bgz.dteohover($('#catdatatable'))
+
+		$('#catdatatable').DataTable({
+			ordering:false,
+			paging:false,
+			searching:false,
+			info:false,
+			columns:[
+				{"data":"listorder","title":'排序<i class="am-icon-info-circle" title="越小排越前面" style="vertical-align: super;"></i>',
+					"render":function(data, type, row){
+					return '<input type="text" name="listorders['+row.catid+']" value="'+data+'" />'
+				},className:"aaa"},
+				{"data":"catid","title":"catid",className:"bbb"},
+				{"data":"catname","title":"栏目名称","render": function (data,type,row) {
+					return row.pos+data;
+				},className:"ccc"},
+				{"data":"typename","title":"栏目类型","render":function(data, type, row){
+					if(row.type==${@Category.TYPE_CAT}){
+						return data;
+					}else if(row.type==${@Category.TYPE_PAGE}){
+						return '<font color="blue">'+data+'</font>';
+					}else if(row.type==${@Category.TYPE_LINK}){
+						return '<font color="red">'+data+'</font>';
+					}
+				},className:"ddd"},
+				{"data":"modelname","title":"所属模型",className:"ddd"},
+				{"data":"items","title":"数据量","render":function(data, type, row){
+					if(row.type==${@Category.TYPE_CAT} && row.child==${@Category.CHILD_NH}){
+						return data
+					}else{
+						return ""
+					}
+				},className:"ddd"},
+				{"data":"url","title":"访问","render":function(data, type, row){
+					return '<a target="_blank" href="'+data+'">访问</a>'
+				},className:"ddd"},
+				{"data":"dnsbind","title":"域名绑定须知","render":function(data, type, row){
+					if(data!=null && data!=""){
+						return '<i class="am-icon-question-circle" title="'+data+'"></i>';
+					}else{
+						return ''
+					}
+				},className:"eee"},
+				{"data":"ismenu","title":"是否显示",className:"eee"},
+				{"data":"mngopt","title":"管理操作","render":function(data, type, row){
+					var editA='<a class="am-btn am-btn-xs" href="/admin/category/edit?catid='+row.catid+'&type='+row.type+'">修改</a>';
+					var delA='<a class="am-btn am-btn-xs" href="javascript:catdel(\''+row.catid+'\',\''+row.catname+'\');">删除</a>'
+					return editA+delA
+				},className:"fff"}
+			],
+			ajax:{
+				type: "GET",
+				url: '/admin/category/catlist',
+				dataSrc: function(ret) {
+					if(ret.code==${@C.success}){
+						return ret.map.data;
+					}
+				}
+			}
+		});
+
+    	$("#catmngbar li").eq(0).addClass("am-active").find("a").attr("href","javascript:void(0)");
+    });
+	var catdel=function(catid,catname){
+		window.top.layer.confirm("确认删除【"+catname+"】吗？",function(index){
+			window.top.layer.close(index)
+			location.href="/admin/category/del?catid="+catid
+		}, function (index) {
+			window.top.layer.close(index)
+		})
+	}
+    </script>
+</head>
+<body>
+<section>
+	<div class="am-g">
+		<div class="am-u-sm-12 am-padding-sm">
+			<div id="catmngbar">
+				<!--#include("/admin/category/catmngbar.html"){}-->
+			</div>
+		</div>
+	</div>
+	<div class="am-g">
+		<div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+			<form method="post" action="/admin/category/listorder">
+				<fieldset>
+					<table width="100%"
+							class="am-table am-table-striped am-table-bordered am-table-compact am-text-nowrap"
+							id="catdatatable">
+					</table>
+					<input type="submit" name="dosubmit" class="am-btn am-btn-default am-btn-xs" value="排序">
+				</fieldset>
+			</form>
+		</div>
+	</div>
+</section>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"修改角色",description:"",keywords:""}){}
+     -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.tree.css" type="text/css"/>
+    <style type="text/css">
+        .am-tree .am-tree-branch .am-tree-branch-children{
+            margin-left: 3em;
+        }
+        .am-tree .am-tree-item {
+            cursor: auto;
+        }
+        .am-tree{
+            font-size: 1.4rem;
+        }
+        .am-tree input{
+            position: relative;
+            top: 2px;
+            left: 2px;
+            margin-right: 2px;
+        }
+        .am-tree .am-tree-icon{
+            font-size: 2.0rem;
+            position: relative;
+            top: 3px;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.tree.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var validmsg="输入正确";
+            $("form").validator({
+                theme: 'simple_bottom',
+                fields:{
+                    'name':{
+                        rule:"角色名:required,remote[/admin/role/checkRolename, id:#id]",
+                        ok:validmsg
+                    }
+                },
+                valid: function(form){
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/role/edit",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.success}){
+                                window.top.layer.alert(ret.msg,function(index){
+                                    window.top.frames[1].datatable.ajax.reload();
+                                    window.top.layer.closeAll();
+                                })
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid:function(form,errors){
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+
+            var data = ${perms}
+            window.perms=$('#perms.am-tree').tree({
+                dataSource: function(options, callback) {
+                    callback({data: options.child || data});
+                },
+                multiSelect: false,
+                cacheItems: true,
+                folderSelect: false,
+                itemSelect:false,
+
+                folderIcon:"caret-right",
+                folderOpenIcon:"caret-down"
+            })
+            $("#perms").delegate("input","click",function(e){
+                var isCheck=$(this).prop('checked')?true:false;
+                if ($(this).parent().hasClass("am-tree-branch-name")) {
+                    $(this).closest("li.am-tree-branch").find(">ul.am-tree-branch-children input[type='checkbox']").prop("checked",isCheck);
+                }
+                if(isCheck){
+                    $(this).parents(".am-tree-branch").find(">div input").prop("checked",isCheck)
+                }
+                e.stopPropagation();
+            })
+            populates($("#perms>li.am-tree-branch:gt(0)>ul.am-tree-branch-children"))
+
+
+            $.each(${role.perms},function(i,n){
+                $('input[name="perms"]').filter('[value="'+n+'"]').prop("checked",true)
+            });
+        });
+        var submitForm=function(){
+            $('form').trigger("validate");
+        }
+
+        var populates=function($ul){
+            $ul.each(function(){
+                perms.tree('populate',$(this))
+                $(this).addClass("am-hide")
+                populates($(this).find("ul.am-tree-branch-children"))
+            })
+        }
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-bottom-0">
+            <form class="am-form am-form-horizontal">
+                <fieldset style="margin-bottom: 0;">
+                    <div class="am-form-group">
+                        <label for="name" class="am-u-sm-3 am-form-label">角色名：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="name" type="text" class="am-inline-block" value="${role.name}"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="description" class="am-u-sm-3 am-form-label">描述：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <textarea name="description" rows="3" cols="10">${role.description}</textarea>
+                        </div>
+                    </div>
+                    <div class="am-form-group" style="margin-bottom: 0;">
+                        <label for="perms" class="am-u-sm-3 am-form-label">权限：</label>
+                        <div class="am-u-sm-8 am-u-end am-padding-0">
+                            <div class="am-panel am-panel-default" style="overflow: scroll;height: 34rem;margin-bottom: 0;">
+                                <div class="am-panel-bd" style="padding-top: 0;padding-bottom: 0;">
+                                    <ul id="perms" class="am-tree am-tree-folder-select">
+                                        <li class="am-tree-branch am-hide" data-template="treebranch">
+                                            <div class="am-tree-branch-header">
+                                                <div class="am-tree-branch-name">
+                                                    <span class="am-tree-icon am-tree-icon-folder"></span>
+                                                    <input name="perms" type="checkbox"/>
+                                                    <span class="am-tree-label"></span>
+                                                </div>
+                                            </div>
+                                            <ul class="am-tree-branch-children"></ul>
+                                        </li>
+                                        <li class="am-tree-item am-hide" data-template="treeitem">
+                                            <div class="am-tree-item-name">
+                                                <input name="perms" type="checkbox"/>
+                                                <span class="am-tree-label"></span>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="id" name="id" value="${role.id}"/>
+                    <input type="hidden" name="dosubmit"/>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

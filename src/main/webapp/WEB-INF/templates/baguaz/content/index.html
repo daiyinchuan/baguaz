@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]>
+<html class="ie ie6" lang="zh"> <![endif]-->
+<!--[if IE 7 ]>
+<html class="ie ie7" lang="zh"> <![endif]-->
+<!--[if IE 8 ]>
+<html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh"> <!--<![endif]-->
+<head>
+    <!--#include("/baguaz/content/head.html"){}-->
+    <style type="text/css">
+        .indexcats li{
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 10px;
+            font-size: 13px;
+        }
+        .indexcats li:last-child{
+            border-bottom: 1px dashed #ccc;
+        }
+        .indexcats li span{
+            font-size: 11px;
+            color: #AAAAAA;
+        }
+        .indexcats li .date{
+            float:right;
+        }
+    </style>
+    <script type="text/javascript" language="javascript">
+        $(function() {
+            /* Start Carousel */
+            $('#featured-posts').carouFredSel({
+                auto: false,
+                prev: '#prev2',
+                next: '#next2',
+            });
+            /* End Carousel */
+        });
+    </script>
+</head>
+<body>
+<!-- Start Header -->
+<!--#include("/baguaz/content/top.html"){}-->
+<!-- End Header -->
+
+<!-- Start Featured Carousel -->
+<div class="container zerogrid">
+    <div class="list_carousel">
+        <#content  action="position" posid="1" catid="0" cache="3600" thumb="1" order="listorder DESC" num="6" var="data">
+            <ul id="featured-posts">
+                <!--#for(r in data){-->
+                <!--#if(rLP.index%3==0){-->
+                <li class="last carousel-item">
+                    <!--#}else{-->
+                <li class="first carousel-item">
+                    <!--#}-->
+                    <div class="post-margin">
+                        <h6><a href="${r.url}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],13,'..')}</a></h6>
+                        <span><i class="fa fa-clock-o"></i>${bc.datefm(r['inputtime'],'yyyy-MM-dd')}</span>
+                    </div>
+                    <div class="featured-image">
+                        <img src="${bc.thumb(r['thumb'],250,130,false)}"/>
+                    </div>
+                    <div class="post-margin">
+                        <p title="${r.description}">${bc.str_cut(r.description,30,'..')}</p>
+                    </div>
+                </li>
+                <!--#}-->
+            </ul>
+        </#content>
+        <div class="clear"></div>
+        <div class="carousel-controls">
+            <a id="prev2" class="prev" href="#"><i class="fa fa-angle-left"></i></a>
+            <a id="next2" class="next" href="#"><i class="fa fa-angle-right"></i></a>
+            <div class="clear"></div>
+        </div>
+    </div>
+</div>
+<!-- Start Featured Carousel -->
+
+<!-- Start Main Container -->
+<div class="container zerogrid">
+    <div class="col-2-3">
+        <div class="wrap-col">
+            <!--#for(catid in [57,58,59,66,63]){ -->
+            <div class="widget-container indexcats">
+                <h6 class="widget-title"><a href="${CATEGORYS[catid]['url']}">${CATEGORYS[catid]['catname']}</a></h6>
+                <#content action="lists" catid="${catid}" num="6" order="listorder DESC,updatetime DESC" moreinfo="0" var="data">
+                    <ul>
+                        <!--#for(r in data){-->
+                        <li>
+                            <i class="fa fa-square-o"></i>
+                            <a target="_blank" title="${r['title']}" href="${r.url}">${bc.str_cut(r['title'],46,'..')}</a>
+                            <span class="date">
+                                <i class="fa fa-clock-o"></i>
+                                ${bc.datefm(r['inputtime'],'yyyy-MM-dd')}
+                            </span>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                </#content>
+                <div class="clear"></div>
+            </div>
+            <!--#}-->
+            <div class="clear"></div>
+        </div>
+    </div>
+
+    <div class="col-1-3">
+        <div class="wrap-col">
+            <div class="widget-container">
+                <form role="search" method="get" id="searchform" class="searchform"
+                      action="/search/">
+                    <div>
+                        <label class="screen-reader-text" for="kw">Search for:</label>
+                        <input type="text" class="searchtxt" name="q" id="q" value="${q!}"/>
+                        <input type="submit" id="searchsubmit" value="搜  索"/>
+                    </div>
+                </form>
+                <div class="clear"></div>
+            </div>
+            <div class="widget-container">
+                <h6 class="widget-title">热门</h6>
+                <!-- Start Widget -->
+                <#content action="hits" catid="0" num="6" order="views DESC" cache="3600" var="data">
+                    <ul class="widget-recent-posts">
+                        <!--#for(r in data){-->
+                        <li>
+                            <div class="post-image">
+                                <div class="post-mask"></div>
+                                <img width="70" height="70" src="${bc.thumb(r['thumb'],70,70,false)}"
+                                     class="attachment-post-widget #"/></div>
+                            <h6><a href="${r.url}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],12,'..')}</a></h6>
+                            <span>${bc.datefm(r['inputtime'],'yyyy-MM-dd')}</span>
+                            <div class="clear"></div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                </#content>
+                <!-- End Widget -->
+                <div class="clear"></div>
+            </div>
+            <div class="widget-container">
+                <h6 class="widget-title">最新</h6>
+                <!-- Start Widget -->
+                <#content action="lists" catid="0" cache="3600" num="6" order="inputtime DESC" moreinfo="0" var="data">
+                    <ul class="widget-recent-posts">
+                        <!--#for(r in data){-->
+                        <li>
+                            <div class="post-image">
+                                <div class="post-mask"></div>
+                                <img width="70" height="70" src="${bc.thumb(r['thumb'],70,70,false)}"
+                                     class="attachment-post-widget #"/></div>
+                            <h6><a href="${r.url}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],12,'..')}</a></h6>
+                            <span>${bc.datefm(r['inputtime'],'yyyy-MM-dd')}</span>
+                            <div class="clear"></div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                </#content>
+                <!-- End Widget -->
+                <div class="clear"></div>
+            </div>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+<!-- End Main Container -->
+
+<!-- Start Footer -->
+<!--#include("/baguaz/content/bottom.html"){}-->
+<!-- End Footer -->
+</body>
+</html>

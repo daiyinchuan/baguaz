@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        include("/default/common/head_community.html"){}
+    -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${CSS_PATH}/commun.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/sha256.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/base64.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/layer/layer.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var validmsg="输入正确";
+            $("form#register").validator({
+                theme: 'simple_bottom',
+                fields:{
+                    'email':{
+                        rule:"E-mail:required,email,remote[/checkEmail]",
+                        ok:validmsg
+                    },
+                    'validcode':{
+                        rule:"验证码:required",
+                        ok:validmsg
+                    },
+                    'password':{
+                        rule:"密码:required,length[6~20]",
+                        ok:validmsg
+                    },
+                    'repassword':{
+                        rule:"重复输入密码:required,match[password]",
+                        ok:validmsg
+                    }
+                },
+                valid: function(form){
+                    var data=$(form).serializeArray();
+                    _.map(data,function(f){
+                        if(f.name=='password' || f.name=='repassword'){
+                            f.value=Base64.encode(sha256_digest(f.value));
+                        }
+                    });
+
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/register",
+                        data: data,
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.success}){
+                                location.href="/regsuccess"
+                            }else{
+                                window.top.layer.alert(ret.msg,function(index){
+                                    window.top.layer.closeAll();
+                                })
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+            });
+
+            $(".submitBtn").on("click",function(){
+                $('form#register').trigger("validate");
+            })
+
+            var running='<i class="am-icon-spinner am-icon-spin"></i>';
+            var _html=$('#sendmail').html();
+            var regetvc='重新'+_html;
+
+            $("#sendmail").on("click",function(){
+                var me = $(this);
+                $('input[name="email"]').trigger("validate");
+                $('input[name="email"]').isValid(function(v){
+                    if (v) {
+                        me.addClass("am-disabled")
+                        var t=59;
+                        var cutdw=setInterval(function(){
+                            if(t==0){
+                                me.html(regetvc).removeClass("am-disabled")
+                                window.clearInterval(cutdw);
+                                return;
+                            }
+                            me.html(_html+"（"+(t--)+"）");
+                        },1000)
+                        $.ajax({
+                            type: "POST",
+                            url: "/sendValidcode",
+                            data: {
+                                type:1,
+                                email:$("input[name='email']").val()
+                            },
+                            dataType: "json",
+                            success: function(ret){
+                                if(ret.code==${@C.success}){
+                                    /*window.top.layer.alert(ret.msg,function(index){
+                                        window.top.layer.closeAll();
+                                    })*/
+                                }
+                            },
+                        });
+                    }
+                });
+            })
+        });
+    </script>
+</head>
+<body>
+<header>
+    <!--#include("/default/common/top_community.html"){}-->
+</header>
+<section>
+    <div class="am-g am-g-fixed">
+        <div class="am-u-md-9 am-u-sm-12 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel topic-panel">
+                <div class="am-panel-hd">
+                    用户注册
+                </div>
+                <div class="am-panel-bd">
+                    <form id="register" class="am-form am-form-horizontal am-text-xs">
+                        <fieldset>
+                            <div class="am-form-group">
+                                <label for="email" class="am-u-md-3 am-form-label">E-mail</label>
+                                <div class="am-u-md-6 am-u-end">
+                                    <input name="email" type="text" class="am-inline-block"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="validcode" class="am-u-md-3 am-u-sm-0 am-form-label">验证码</label>
+                                <div class="am-u-md-6 am-u-sm-7">
+                                    <input name="validcode" type="text" maxlength="6" class="am-inline-block"/>
+                                </div>
+                                <div class="am-u-md-2 am-u-sm-3 am-u-end">
+                                    <a id="sendmail" href="javascript:void(0)" class="am-btn am-btn-default am-btn-xs">获取验证码</a>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="nickname" class="am-u-md-3 am-form-label">昵称</label>
+                                <div class="am-u-md-6 am-u-end">
+                                    <input name="nickname" type="text" class="am-inline-block"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="password" class="am-u-md-3 am-form-label">密码</label>
+                                <div class="am-u-md-6 am-u-end">
+                                    <input name="password" type="password" class="am-inline-block"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="repassword" class="am-u-md-3 am-form-label">重复输入密码</label>
+                                <div class="am-u-md-6 am-u-end">
+                                    <input name="repassword" type="password" class="am-inline-block"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group am-margin-sm">
+                                <label class="am-u-md-3 am-form-label">
+                                </label>
+                                <div class="am-u-md-6 am-u-end">
+                                    <input type="hidden" name="dosubmit"/>
+                                    <button type="button" class="submitBtn am-btn am-btn-default am-btn-lg">注册</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="am-u-md-3 am-u-sm-8 am-padding-xs am-u-end">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    <b>关于</b>
+                </div>
+                <div class="am-panel-bd">
+                <#content action="page" catid="100" cache="3600" var="data">
+                    ${data.content}
+                </#content>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <!--#include("/default/common/bottom_community.html"){}-->
+</footer>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#include("/default/common/head.html"){}-->
+    <style type="text/css">
+        em.kw{
+            color: #ff261e;
+        }
+        .ahit{
+            margin: 20px;
+            margin-right: 5px;
+        }
+        .ahit>.title{
+            font-size: 1.4rem;
+            text-decoration: underline;
+            color: #0A0ACE;
+        }
+        .ahit>.content{
+            margin-top: 5px;
+        }
+        .ahit:last-child{
+            margin-bottom: 100px;
+        }
+        #pages>*{
+            min-width: 18px !important;
+            height: 34px !important;
+            line-height: 34px !important;
+            font-size: 1.1rem;
+            font-family: 微软雅黑;
+        }
+        #pages>a{
+            color: #095DB1 !important;
+        }
+        #pages>span{
+            border:0px;
+            background: #fff !important;
+            color: #000 !important;
+        }
+    </style>
+</head>
+<body>
+<!--#include("/default/common/top_search.html"){}-->
+<div class="main" style="border-top: 1px solid #DBE7ED;">
+    <div class="col-left" style="min-height: 430px;position:relative;">
+        <div id="sr">
+        <!--#
+            for(hit in search_result){
+        -->
+        <div class="ahit">
+            <a href="${hit.url}" class="title" target="_blank">${hit.title}</a>
+            <div class="content">${hit.content}</div>
+        </div>
+        <!--#
+            }
+        -->
+        </div>
+        <div id="pages" class="text-l" style="margin-left: 20px;margin-left: 20px;position: absolute;bottom: 0;">${pages}</div>
+    </div>
+    <div class="col-auto">
+        <div class="box" style="margin-top: 10px;">
+            <h5 class="title-2">
+                <span class="rt fn f12 tab SwapTab" style="float: initial;">
+                    <span class="fb">热点</span>
+                </span>
+            </h5>
+            <div class="tab-content">
+                <ul class="content digg">
+                    <#content action="hits" catid="33" num="10" order="views DESC" cache="600" var="data">
+                        <!--#for(r in data){-->
+                        <li><a href="${r['url']}" target="_blank" title="${r['title']}">${r['title']}</a></li>
+                        <!--#}-->
+                    </#content>
+                </ul>
+                <ul class="content digg hidden">
+                    <#content action="hits" catid="33" num="10" cache="600" order="views DESC" var="data">
+                        <!--#for(r in data){-->
+                        <li><a href="${r['url']}" target="_blank">${r['title']}</a></li>
+                        <!--#}-->
+                    </#content>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="footer">
+    <!--#include("/default/common/bottom.html"){}-->
+</div>
+</body>
+</html>

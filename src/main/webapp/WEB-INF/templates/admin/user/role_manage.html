@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        var entity={key:"role",desc:"角色"};
+
+        include("/admin/head.html",{title:entity.desc+"管理",description:"",keywords:""}){}
+    -->
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.datatables.css" type="text/css"/>
+    <style type="text/css">
+        table.dataTable thead > tr > th{
+            padding-right: 0;
+            padding-left: 0;
+            text-align: center;
+        }
+
+        table.dataTable .am-btn{
+            padding: 0 0.5em;
+        }
+
+        td.bbb{
+            text-align: center;
+            width: 56px;
+        }
+        td.ccc{
+            text-align: center;
+            width:185px
+        }
+        td.ddd{
+            text-align: center;
+            width:268px
+        }
+        td.fff{
+            text-align: center;
+            width:168px
+        }
+        td.fff span{
+            color: #cccccc;padding: 0 0.5em;vertical-align: middle;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.datatables.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/dataTables.responsive.min.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            bgz.dteohover($('#datatable'))
+
+            window.datatable=$('#datatable').DataTable({
+                ordering:false,
+                paging:false,
+                searching:false,
+                info:false,
+                columns:[
+                    {"data":"id","title":"id",className:"bbb"},
+                    {"data":"name","title":"角色名",className:"ccc"},
+                    {"data":"description","title":"描述",className:"ccc"},
+                    {"data":"mngopt","title":"管理操作","render":function(data, type, row){
+                        if(row.id==1){
+                            var editA='<span>修改</span>';
+                            var delA='<span>删除</span>';
+                            var catprivA='<span>栏目权限</span>';
+                        }else{
+                            var editA='<a class="am-btn am-btn-xs" href="javascript:edit('+row.id+')">修改</a>';
+                            var delA='<a class="am-btn am-btn-xs" href="javascript:del(\''+row.id+'\',\''+row.name+'\');">删除</a>'
+                            var catprivA='<a class="am-btn am-btn-xs" href="javascript:catpriv('+row.id+');">栏目权限</a>';
+                        }
+                        return editA+catprivA+delA
+                    },className:"fff"}
+                ],
+                ajax:{
+                    type: "GET",
+                    url: '/admin/${entity.key}/list',
+                    dataSrc: function(ret) {
+                        if(ret.code==${@C.success}){
+                            return ret.map.data;
+                        }
+                    }
+                }
+            });
+        });
+
+        var add= function () {
+            window.top.layer.open({
+                type: 2,
+                title: '添加${entity.desc}',
+                shadeClose: false,
+                shade: 0.8,
+                area: ['680px', '98%'],
+                content: '/admin/${entity.key}/add',
+                btn:['提交','取消'],
+                yes:function(index,layero){
+                    var iframeWin =bgz.iframeWin(layero);
+                    iframeWin.submitForm()
+                },
+                cancel:function(index){
+                    window.top.layer.close(index);
+                }
+            });
+        }
+
+        var edit= function (id) {
+            window.top.layer.open({
+                type: 2,
+                title: '修改${entity.desc}',
+                shadeClose: false,
+                shade: 0.8,
+                area: ['680px', '98%'],
+                content: '/admin/${entity.key}/edit?id='+id,
+                btn:['提交','取消'],
+                yes:function(index,layero){
+                    var iframeWin =bgz.iframeWin(layero);
+                    iframeWin.submitForm()
+                },
+                cancel:function(index){
+                    window.top.layer.close(index);
+                }
+            });
+        }
+
+        var del=function(id,name){
+            window.top.layer.confirm("确认删除【"+name+"】吗？",function(index){
+                window.top.layer.close(index)
+                location.href="/admin/${entity.key}/del?id="+id
+            }, function (index) {
+                window.top.layer.close(index)
+            })
+        }
+
+        var catpriv=function(id){
+            window.top.layer.open({
+                type: 2,
+                title: '栏目权限',
+                shadeClose: false,
+                shade: 0.8,
+                area: ['480px', '98%'],
+                content: '/admin/${entity.key}/catpriv?id='+id,
+                btn:['提交','取消'],
+                yes:function(index,layero){
+                    var iframeWin =bgz.iframeWin(layero);
+                    iframeWin.submitForm()
+                },
+                cancel:function(index){
+                    window.top.layer.close(index);
+                }
+            });
+        }
+    </script>
+</head>
+<body style="width: 99%;">
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <ul class="am-nav am-nav-pills">
+                <li class="am-active"><a href="javascript:void(0);">${entity.desc}管理</a></li>
+                <li><a target="_blank" href="javascript:add();">添加${entity.desc}</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+            <table width="100%"
+                   class="am-table am-table-striped am-table-bordered am-table-compact am-text-nowrap"
+                   id="datatable">
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

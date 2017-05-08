@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]>
+<html class="ie ie6" lang="zh"> <![endif]-->
+<!--[if IE 7 ]>
+<html class="ie ie7" lang="zh"> <![endif]-->
+<!--[if IE 8 ]>
+<html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh"> <!--<![endif]-->
+<head>
+    <!--#include("/baguaz/content/head.html"){}-->
+</head>
+<body>
+<!-- Start Header -->
+<!--#include("/baguaz/content/top.html"){}-->
+<!-- End Header -->
+
+<!-- Start Main Container -->
+<div class="container zerogrid">
+    <div class="col-1-4">
+        <div class="wrap-col">
+        </div>
+    </div>
+    <div class="col-2-4">
+        <div class="wrap-col" style="min-height: 379px;">
+            <#content action="category" catid="56" limit="25" order="listorder ASC" cache="3600" var="data">
+                <div class="wrap-col">
+                    <!--#for(r in data){-->
+                    <a href="${r.url}">${r.catname}</a>
+                    <!--#}-->
+                </div>
+            </#content>
+        </div>
+    </div>
+    <div class="col-1-4">
+        <div class="wrap-col">
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+<!-- End Main Container -->
+
+<!-- Start Footer -->
+<!--#include("/baguaz/content/bottom.html"){}-->
+<!-- End Footer -->
+</body>
+</html>

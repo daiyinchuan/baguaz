@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        include("/default/common/head_community.html"){}
+    -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${CSS_PATH}/commun.css" type="text/css"/>
+    <style>
+        #lahint p{
+            margin: 0;
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/sha256.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/base64.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/layer/layer.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("form#register").validator({
+                theme: 'simple_bottom',
+                fields:{
+                    'account':{
+                        rule:"帐号:required",
+                    },
+                    'password':{
+                        rule:"密码:required",
+                    },
+                },
+                valid: function(form){
+                    var data=$(form).serializeArray();
+                    _.map(data,function(f){
+                        if(f.name=='password'){
+                            f.value=Base64.encode(sha256_digest(f.value));
+                        }
+                    });
+
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/login",
+                        data: data,
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.success}){
+                                location.href="/community"
+                            }else{
+                                window.top.layer.alert(ret.msg,function(index){
+                                    window.top.layer.closeAll();
+                                })
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+            });
+
+            $(".submitBtn").on("click",function(){
+                $('form#register').trigger("validate");
+            })
+
+            window.onkeydown = function (event) {
+                if (event.keyCode == 13) {
+                    $('.submitBtn').click();
+                }
+            }
+
+        });
+    </script>
+</head>
+<body>
+<header>
+    <!--#include("/default/common/top_community.html"){}-->
+</header>
+<section>
+    <div class="am-g am-g-fixed">
+        <div class="am-u-md-9 am-u-sm-12 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel topic-panel" style="min-height: 40rem;">
+                <div class="am-panel-hd">
+                    用户登录
+                </div>
+                <div class="am-panel-bd" style="padding-top: 10rem;">
+                    <form id="register" class="am-form am-form-horizontal">
+                        <fieldset>
+                            <div class="am-form-group">
+                                <label for="account" class="am-u-md-3 am-u-sm-3 am-form-label">帐号</label>
+                                <div class="am-u-md-6 am-u-sm-9 am-u-end">
+                                    <input name="account" placeholder="用户号码/用户名/邮箱" type="text" class="am-inline-block"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                            <#content action="page" catid="101" cache="3600" var="data">
+                                <label class="am-u-md-3 am-u-sm-3 am-form-label"></label>
+                                <div id="lahint" class="am-u-md-6 am-u-sm-9 am-u-end">
+                                    ${data.content}
+                                </div>
+                            </#content>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="password" class="am-u-md-3 am-u-sm-3 am-form-label">密码</label>
+                                <div class="am-u-md-6 am-u-sm-9 am-u-end">
+                                    <input name="password" type="password" class="am-inline-block"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group am-margin-sm">
+                                <label class="am-u-md-3 am-u-sm-3 am-form-label">
+                                </label>
+                                <div class="am-u-md-8 am-u-sm-9 am-u-end">
+                                    <input type="hidden" name="dosubmit"/>
+                                    <button type="button" class="submitBtn am-btn am-btn-default am-btn-lg">登录</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="am-u-md-3 am-u-sm-8 am-u-end am-padding-xs">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    <b>关于</b>
+                </div>
+                <div class="am-panel-bd">
+                    <#content action="page" catid="100" cache="3600" var="data">
+                        ${data.content}
+                    </#content>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <!--#include("/default/common/bottom_community.html"){}-->
+</footer>
+</body>
+</html>

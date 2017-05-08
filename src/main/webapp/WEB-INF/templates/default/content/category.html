@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#include("/default/common/head.html"){}-->
+</head>
+<body>
+<!--#include("/default/common/top.html"){}-->
+<div class="main">
+    <div class="col-left channel-hot">
+        <div class="news-hot">
+            <div class="icon"></div>
+            <div class="content">
+                <#content  action="position" posid="10" catid="${CAT.catid}" cache="600" thumb="1" order="listorder DESC" num="2" var="data">
+                <!--#for(r in data){-->
+                <h4 class="blue"><a href="${r['url']}" target="_blank">${r['title']}</a></h4>
+                <p><img src="${bc.thumb(r['thumb'],90,60)}" width="90" height="60" />${bc.str_cut(bc.strip_tags(r['description']),62)}</p>
+                <div class="bk20 hr"><hr /></div>
+                <!--#}-->
+                </#content>
+                <#content  action="lists" catid="${bc.s(CAT.catid)}" order="id DESC" cache="600" num="3" var="data">
+                <ul class="list">
+                    <!--#for(r in data){-->
+                    <li>·<a href="${r['url']}" title="${r['title']}" target="_blank">${bc.str_cut(r['title'],30)}</a></li>
+                    <!--#}-->
+                </ul>
+                </#content>
+            </div>
+        </div>
+    </div>
+    <div class="col-auto channel-slide">
+        <#content action="lists" catid="${CAT.catid}" order="listorder ASC" cache="600" thumb="1" num="5" var="data">
+        <ul class="thumb">
+            <!--#for(r in data){-->
+            <li <!--#if(rLP.index==1){-->class="on" style="margin:0"<!--#}-->>
+                <a href="${r['url']}">
+                    <img src="${bc.thumb(r['thumb'],82,50)}"  alt="${r['title']}" width="82" height="50" />
+                    <div class="icon"></div>
+                </a>
+            </li>
+            <!--#}-->
+        </ul>
+        <div class="col-auto">
+            <ul class="photo">
+                <!--#for(r in data){-->
+                <li>
+                    <a href="${r['url']}" title="${r['title']}">
+                        <img src="${bc.thumb(r['thumb'], 398, 234)}" width="398" height="234" alt="${r['title']}" />
+                    </a>
+                </li>
+                <!--#}-->
+            </ul>
+            <div class="title">
+                <!--#for(r in data){-->
+                <p <!--# if(rLP.index==1){-->style="display:block"<!--#}-->>
+                    <strong><a href="${r['url']}" title="${r['title']}" class="blue">${bc.str_cut(r['title'],20,'..')}</a></strong>
+                    <br />${bc.str_cut(bc.strip_tags(r['description']),62)}
+                </p>
+                <!--#}-->
+            </div>
+        </div>
+        </#content>
+    </div>
+    <div class="bk10"></div>
+    <div class="col-left">
+        <!--#
+            var j=1;
+            var subcat=bc.subcat(CAT.catid,null);
+            for(v in subcat){
+                if(v['type']!=0) continue;
+        -->
+        <div class="box cat-area" <!--# if(j%2==1){-->style="margin-right:10px"<!--#}-->>
+            <h5 class="title-1">${v['catname']}<a href="${v['url']}" class="more">更多>></a></h5>
+            <div class="content">
+                <#content action="lists" catid="${v['catid']}" cache="600" thumb="1" num="1" order="listorder DESC" var="data">
+                <p>
+                    <!--#for(r in data){-->
+                    <a href="${r['url']}" target="_blank"><img src="${bc.thumb(r['thumb'],70,60)}" width="70" height="60"/></a>
+                    <strong><a href="${r['url']}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],30)}</a></strong>
+                    <br />${bc.str_cut(r['description'],42,'..')}
+                    <!--#}-->
+                </p>
+                </#content>
+                <div class="bk15 hr"></div>
+                <ul class="list  lh24 f14">
+                    <#content action="lists" catid="${v['catid']}" cache="600" num="5" order="listorder DESC" var="data">
+                    <!--#for(r in data){-->
+                    <li><a href="${r['url']}" target="_blank">${r['title']}</a></li>
+                    <!--#}-->
+                    </#content>
+                </ul>
+            </div>
+        </div>
+        <!--# if(j%2==0){--><div class="bk10"></div><!--#}-->
+        <!--#
+                j++;
+            }
+        -->
+    </div>
+    <div class="col-auto">
+        <div class="box">
+            <h5 class="title-2">频道总排行</h5>
+            <#content action="hits" catid="${CAT.catid}" cache="600" num="10" order="views DESC" var="data">
+                <ul class="content digg">
+                    <!--#for(r in data){-->
+                    <li><a href="${r['url']}" target="_blank">${r['title']}</a></li>
+                    <!--#}-->
+                </ul>
+            </#content>
+        </div>
+        <div class="bk10"></div>
+        <div class="box">
+            <h5 class="title-2">频道本月排行</h5>
+            <#content action="hits" catid="${CAT.catid}" cache="600" num="8" order="monthviews DESC" var="data">
+                <ul class="content rank">
+                    <!--#for(r in data){-->
+                    <li>
+                        <span>${r['monthviews']}</span>
+                        <a href="${r['url']}" class="title" title="${r['title']}">${bc.str_cut(r['title'],56,'...')}</a>
+                    </li>
+                    <!--#}-->
+                </ul>
+            </#content>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    function ChannelSlide(Name,Class){
+        $(Name+' ul.photo li').sGallery({
+            titleObj:Name+' div.title p',
+            thumbObj:Name+' .thumb li',
+            thumbNowClass:Class
+        });
+    }
+    new ChannelSlide(".channel-slide","on",311,260);
+</script>
+<div class="footer">
+    <!--#include("/default/common/bottom.html"){}-->
+</div>
+</body>
+</html>

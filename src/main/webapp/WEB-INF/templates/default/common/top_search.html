@@ -1,0 +1,46 @@
+<div class="body-top">
+    <div class="content">
+        <#content action="position" posid="9" order="id" num="10" cache="600" var="data">
+    		<div id="announ">
+                 <ul>
+                 <!--#for(r in data){-->
+                      <li><a href="${r['url']}">${r['title']}</a></li>
+                 <!--#}-->
+                 </ul>
+            </div>
+        </#content>
+    </div>
+</div>
+<div class="header" style="overflow: hidden;">
+    <div class="nav-bar">
+        <map>
+            <#content action="category" catid="0" limit="25" order="listorder ASC" cache="3600" var="data">
+                <ul class="nav-site">
+                    <li><a href="${bc.siteurl()}"><span>首页</span></a></li>
+                    <!--#for(r in data){-->
+                    <li class="line">|</li>
+                    <li><a href="${r['url']}"><span>${r['catname']}</span></a></li>
+                    <!--#}-->
+                </ul>
+            </#content>
+        </map>
+    </div>
+
+    <div class="logo" style="top: 5px;position: relative;">
+        <a href="${bc.siteurl()}">
+            <img src="${IMG_PATH}/v9/logo.jpg" />
+        </a>
+    </div>
+
+    <div class="search" style="top: 15px;position: relative;width:auto;height: initial;">
+        <div class="bd">
+            <form action="/search/" method="get">
+                <input type="text" class="text" name="q" id="q" value="${q}" style="width: 360px"/>
+                <button type="submit" class="button">搜 索</button>
+            </form>
+        </div>
+        <div id="sr_tt">
+            ${search_tt}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<!--#
+         include("/admin/head.html",{title:"未授权操作",description:"",keywords:""}){}
+     -->
+	<style type="text/css">
+		section{
+			position: relative;
+		}
+		.am-alert{
+			position: absolute;
+			margin: auto;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			height: 10%;
+			width: 30%;
+		}
+	</style>
+	<script type="text/javascript">
+		$(function(){
+			$("section").css({height:window.innerHeight})
+		})
+	</script>
+</head>
+<body>
+<section>
+	<div class="am-alert am-alert-danger" data-am-alert>
+		未授权操作！
+	</div>
+</section>
+</body>
+</html>

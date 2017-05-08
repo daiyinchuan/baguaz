@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        include("/default/common/head_community.html"){}
+    -->
+    <link rel="stylesheet" href="${CSS_PATH}/commun.css" type="text/css"/>
+</head>
+<body>
+<header>
+    <!--#include("/default/common/top_community.html"){}-->
+</header>
+<section class="commu-secstyle">
+    <div class="am-g am-g-fixed">
+        <div class="am-u-md-3 am-u-sm-0 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-bd">
+                    <div class="am-margin-right-sm" style="overflow: hidden;">
+                        <img class="am-fl" src="${bc.thumb(avatar!,73,-1)}" title="${nickname}" style="width: 73px;border-radius: 4px;margin: 0 1rem 1rem 0;">
+                        <div>${nickname}</div>
+                        <div>（${id}）</div>
+                    </div>
+                    <div>
+                        <div style="color: #8a8282;font-size: 1.0rem;">${signature}</div>
+                        <div>积分：${score}</div>
+                        <div>注册时间：${bc.datehuman(regtime)}</div>
+                        <div>最后登录时间：${bc.datehuman(lastlogintime)}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="am-u-md-9 am-u-sm-12 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    最近创建的话题
+                </div>
+                <div class="am-panel-bd">
+                    <ul class="am-list topic-ul">
+                        <!--#for(r in latestTopics.list){-->
+                        <li>
+                            <div class="am-g">
+                                <div class="am-u-md-1 am-u-sm-2">
+                                    <a href="/user/${r.authorid}"><img src="${bc.thumb(r.avatar,48,-1)}" title="${r.nickname}"
+                                                                       class="avatar"></a>
+                                </div>
+                                <div class="am-u-md-10 am-u-sm-8">
+                                    <div>
+                                        <!--#if(r.top==1){-->
+                                        <i class="l-label c-top am-icon-thumb-tack" title="置顶"></i>
+                                        <!--#}-->
+                                        <!--#if(r.good==1){-->
+                                        <i class="l-label c-good am-icon-diamond" title="精华"></i>
+                                        <!--#}-->
+                                        <a href="${r.url}">${r.title}</a>
+                                    </div>
+                                    <div class="attr">
+                                        <a class="node" href="${r.securl}">${r.secname}</a>
+                                        <span>• ${r.reply_count}个回复 • ${r.view}次浏览 • ${bc.datehuman(r['last_reply_time'])}</span>
+                                    </div>
+                                </div>
+                                <div class="am-u-md-1 am-u-sm-2">
+                                    <!--#if(!isEmpty(r.last_reply_authorid)){-->
+                                    <a href="/user/${r.last_reply_authorid}">
+                                        <img
+                                            src="${bc.thumb(r.last_reply_author_avatar,25,-1)}" style="width: 25px;border-radius: 25px;"></a>
+                                    <!--#}-->
+                                </div>
+                            </div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                    <div><a href="#">查看更多>></a></div>
+                </div>
+            </div>
+
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    最近参与的话题
+                </div>
+                <div class="am-panel-bd">
+                    <ul class="am-list topic-ul">
+                        <!--#for(r in latestReplys.list){-->
+                        <li>
+                            <div class="am-g">
+                                <div class="am-u-md-1 am-u-sm-2">
+                                    <a href="/user/${r.authorid}"><img src="${bc.thumb(r.avatar,48,-1)}" title="${r.nickname}"
+                                                                       class="avatar"></a>
+                                </div>
+                                <div class="am-u-md-10 am-u-sm-8">
+                                    <div>
+                                        <!--#if(r.top==1){-->
+                                        <i class="l-label c-top am-icon-thumb-tack" title="置顶"></i>
+                                        <!--#}-->
+                                        <!--#if(r.good==1){-->
+                                        <i class="l-label c-good am-icon-diamond" title="精华"></i>
+                                        <!--#}-->
+                                        <a href="${r.url}">${r.title}</a>
+                                    </div>
+                                    <div class="attr">
+                                        <a class="node" href="${r.securl}">${r.secname}</a>
+                                        <span>• ${r.reply_count}个回复 • ${r.view}次浏览 • ${bc.datehuman(r['last_reply_time'])}</span>
+                                    </div>
+                                </div>
+                                <div class="am-u-md-1 am-u-sm-2">
+                                    <!--#if(!isEmpty(r.last_reply_authorid)){-->
+                                    <a href="/user/${r.last_reply_authorid}">
+                                        <img
+                                                src="${bc.thumb(r.last_reply_author_avatar,25,-1)}" style="width: 25px;border-radius: 25px;"></a>
+                                    <!--#}-->
+                                </div>
+                            </div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                    <div><a href="#">查看更多>></a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <!--#include("/default/common/bottom_community.html"){}-->
+</footer>
+</body>
+</html>

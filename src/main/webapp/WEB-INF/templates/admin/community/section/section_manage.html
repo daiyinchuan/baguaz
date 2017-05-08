@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        var entity={key:"section",desc:"板块"};
+
+        include("/admin/head.html",{title:entity.desc+"管理",description:"",keywords:""}){}
+    -->
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.datatables.css" type="text/css"/>
+    <style type="text/css">
+        table.dataTable > thead > tr > th{
+            padding-right: 0;
+            padding-left: 0;
+            text-align: center;
+        }
+
+        table.dataTable .am-btn{
+            padding: 0 0.5em;
+        }
+
+        th.aaa{
+            height:25px;
+            width:40px
+        }
+        td.aaa input{
+            text-align: center;
+            width: 40px;
+        }
+        td.bbb{
+            text-align: center;
+            width: 56px;
+        }
+        table.dataTable td.ccc{
+            padding-left:1em;
+            width:325px
+        }
+        td.ddd{
+            text-align: center;
+            width:168px
+        }
+        td.eee{
+            text-align: center;
+            width:88px
+        }
+        td.fff{
+            text-align: center;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.datatables.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/dataTables.responsive.min.js"></script>
+    <script type="text/javascript">
+        (function () {
+            <!--#if(!isEmpty(retmsg)){-->
+            window.top.layer.alert('${retmsg.msg}');
+            <!--#}-->
+        })();
+
+        $(function () {
+            bgz.dteohover($('#datatable'))
+
+            window.datatable = $('#datatable').DataTable({
+                ordering: false,
+                paging: false,
+                searching: false,
+                info: true,
+                columns: [
+                    {
+                        "data": "listorder",
+                        "title": '排序<i class="am-icon-info-circle" title="越小排越前面" style="vertical-align: super;"></i>',
+                        "render": function (data, type, row) {
+                            return '<input type="text" name="listorders[' + row.id + ']" value="' + data + '" />'
+                        },
+                        className: "aaa"
+                    },
+                    {"data": "id", "title": "id", className: "bbb"},
+                    {"data": "name", "title": "名称","render": function (data,type,row) {
+                        return row.pos+data;
+                    }, className: "ccc"},
+                    {"data": "tab", "title": "标签", className: "ddd"},
+                    {"data":"url","title":"访问","render":function(data, type, row){
+                        return '<a target="_blank" href="'+data+'">访问</a>'
+                    },className:"eee"},
+                    {"data": "isdisplay", "title": "是否显示", className: "eee"},
+                    {
+                        "data": "mngopt", "title": "管理操作", "render": function (data, type, row) {
+                        var editA = '<a class="am-btn am-btn-xs" href="javascript:edit(' + row.id + ')">修改</a>';
+                        var delA='<a class="am-btn am-btn-xs" href="javascript:del(\''+row.id+'\',\''+row.name+'\');">删除</a>'
+                        return editA+delA
+                    }, className: "fff"
+                    }
+                ],
+                ajax: {
+                    type: "GET",
+                    url: '/admin/community/${entity.key}/list',
+                    dataSrc: function (ret) {
+                        if (ret.code ==${@C.success}) {
+                            return ret.map.data
+                        }
+                    }
+                }
+            });
+
+
+            $('#checkAll').on("click", function () {
+                if ($(this).prop("checked")) {
+                    $('input[name="delcheck"]').prop("checked", true)
+                } else {
+                    $('input[name="delcheck"]').prop("checked", false)
+                }
+            })
+
+            var sortBtn = '<button type="submit" name="dosubmit" id="sortBtn" class="am-btn am-btn-default am-btn-xs">排序</button>';
+            $('#datatable_info').before('<div>' + sortBtn + '</div>');
+        });
+
+        var add = function () {
+            window.top.layer.open({
+                type: 2,
+                title: '添加${entity.desc}',
+                shadeClose: false,
+                shade: 0.8,
+                area: ['680px', '90%'],
+                content: '/admin/community/${entity.key}/add',
+                btn: ['提交', '取消'],
+                yes: function (index, layero) {
+                    var iframeWin = bgz.iframeWin(layero);
+                    iframeWin.submitForm()
+                },
+                cancel: function (index) {
+                    window.top.layer.close(index);
+                }
+            });
+        }
+
+        var edit = function (id) {
+            window.top.layer.open({
+                type: 2,
+                title: '修改${entity.desc}',
+                shadeClose: false,
+                shade: 0.8,
+                area: ['680px', '90%'],
+                content: '/admin/community/${entity.key}/edit?id=' + id,
+                btn: ['提交', '取消'],
+                yes: function (index, layero) {
+                    var iframeWin = bgz.iframeWin(layero);
+                    iframeWin.submitForm()
+                },
+                cancel: function (index) {
+                    window.top.layer.close(index);
+                }
+            });
+        }
+
+        var del=function(id,name){
+            window.top.layer.confirm("确认删除【"+name+"】吗？",function(index){
+                window.top.layer.close(index)
+                location.href="/admin/community/${entity.key}/del?id="+id
+            }, function (index) {
+                window.top.layer.close(index)
+            })
+        }
+    </script>
+</head>
+<body style="width: 99%;">
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <ul class="am-nav am-nav-pills">
+                <li class="am-active"><a href="javascript:void(0);">${entity.desc}管理</a></li>
+                <li><a target="_blank" href="javascript:add();">添加${entity.desc}</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+            <form method="post" action="/admin/community/${entity.key}/listorder">
+                <fieldset>
+                    <table width="100%"
+                           class="am-table am-table-striped am-table-bordered am-table-compact am-text-nowrap"
+                           id="datatable">
+                    </table>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        var entity={key:"site",desc:"站点"};
+
+        include("/admin/head.html",{title:entity.desc+"管理",description:"",keywords:""}){}
+    -->
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.datatables.css" type="text/css"/>
+    <style type="text/css">
+        table.dataTable thead > tr > th{
+            padding-right: 0;
+            padding-left: 0;
+            text-align: center;
+        }
+
+        table.dataTable .am-btn{
+            padding: 0 0.5em;
+        }
+
+        td.bbb{
+            text-align: center;
+            width: 56px;
+        }
+        td.ccc{
+            text-align: center;
+            width:185px
+        }
+        td.ddd{
+            text-align: center;
+            width:268px
+        }
+        td.fff{
+            text-align: center;
+            width:168px
+        }
+        td.fff span{
+            color: #cccccc;padding: 0 0.5em;vertical-align: middle;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.datatables.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/dataTables.responsive.min.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            window.datatable=$('#datatable').DataTable({
+                ordering:false,
+                paging:false,
+                searching:false,
+                info:false,
+                columns:[
+                    {"data":"siteid","title":"siteid",className:"bbb"},
+                    {"data":"name","title":"站点名",className:"ccc"},
+                    {"data":"domain","title":"站点域名",className:"ddd"},
+                    {"data":"mngopt","title":"管理操作","render":function(data, type, row){
+                        var editA='<a class="am-btn am-btn-xs" href="javascript:edit('+row.siteid+')">修改</a>';
+                        return editA
+                    },className:"fff"}
+                ],
+                ajax:{
+                    type: "GET",
+                    url: '/admin/${entity.key}/list',
+                    dataSrc: function(ret) {
+                        if(ret.code==${@C.success}){
+                            return ret.map.data;
+                        }
+                    }
+                }
+            });
+        });
+
+        var edit= function (siteid) {
+            window.top.layer.open({
+                type: 2,
+                title: '修改${entity.desc}',
+                shadeClose: false,
+                shade: 0.8,
+                area: ['680px', '90%'],
+                content: '/admin/${entity.key}/edit?siteid='+siteid,
+                btn:['提交','取消'],
+                yes:function(index,layero){
+                    var iframeWin =bgz.iframeWin(layero);
+                    iframeWin.submitForm()
+                },
+                cancel:function(index){
+                    window.top.layer.close(index);
+                }
+            });
+        }
+    </script>
+</head>
+<body style="width: 99%;">
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <ul class="am-nav am-nav-pills">
+                <li class="am-active"><a href="javascript:void(0);">${entity.desc}管理</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+            <table width="100%"
+                   class="am-table am-table-striped am-table-bordered am-table-compact am-text-nowrap"
+                   id="datatable">
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

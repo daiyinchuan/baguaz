@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        var entity={key:"search",desc:"全站搜索"};
+        include("/admin/head.html",{title:entity.desc+"管理",description:"",keywords:""}){}
+    -->
+    <style type="text/css">
+    </style>
+    <script type="text/javascript">
+        $(function() {
+
+        });
+
+        var createindex=function(){
+            $.ajax({
+                type: "GET",
+                url: "/admin/search/createindex",
+                dataType: "json",
+                success: function(ret){
+                    if(ret.code==${@C.success}){
+                        window.top.layer.alert(ret.msg,function(index){
+                            window.top.layer.closeAll();
+                        })
+                    }
+                }
+            });
+        }
+
+        var deleteindex=function(){
+            $.ajax({
+                type: "GET",
+                url: "/admin/search/deleteindex",
+                dataType: "json",
+                success: function(ret){
+                    if(ret.code==${@C.success}){
+                        window.top.layer.alert(ret.msg,function(index){
+                            window.top.layer.closeAll();
+                        })
+                    }
+                }
+            });
+        }
+    </script>
+</head>
+<body style="width: 99%;">
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <ul class="am-nav am-nav-pills">
+                <li class="am-active"><a href="javascript:void(0);">${entity.desc}管理</a></li>
+                <li><a href="javascript:createindex();">重建索引</a></li>
+                <li><a href="javascript:deleteindex();">删除索引</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+        </div>
+    </div>
+</section>
+</body>
+</html>

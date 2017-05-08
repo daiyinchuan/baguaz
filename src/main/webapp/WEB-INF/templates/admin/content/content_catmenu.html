@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <!--#
+        include("/admin/head.html",{title:"栏目树",description:"",keywords:""}){}
+    -->
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.tree.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.tree.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            var data = ${catmenu}
+            var catmenu=$('#catMenu.am-tree').tree({
+                dataSource: function(options, callback) {
+                    callback({data: options.child || data});
+                },
+                multiSelect: false,
+                cacheItems: true,
+                folderSelect: false
+            })
+
+            $('#catMenu.am-tree').delegate("a","click",function(event) {
+                event.preventDefault();
+                parent.$('#ifrm_main').attr("src", $(this).attr("href"));
+                parent.$(".cmpost").html(" > "+$(this).html());
+            });
+
+            var dcstat=true;
+            $('#catMenu>li:first').click(function(){
+                if(dcstat){
+                    catmenu.tree('discloseAll');
+                }else{
+                    catmenu.tree('closeAll');
+                }
+                dcstat=!dcstat;
+            })
+        });
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-0">
+            <ul id="catMenu" class="am-tree">
+                <li><button class="am-tree-label am-btn am-btn-link am-btn-xs">展开/收缩</button></li>
+                <li class="am-tree-branch am-hide" data-template="treebranch">
+                    <div class="am-tree-branch-header">
+                        <button class="am-tree-branch-name">
+                            <span class="am-tree-icon am-tree-icon-folder"></span>
+                            <span class="am-tree-label"></span>
+                        </button>
+                    </div>
+                    <ul class="am-tree-branch-children"></ul>
+                </li>
+                <li class="am-tree-item am-hide" data-template="treeitem">
+                    <button class="am-tree-item-name">
+                    	<span class="am-tree-icon am-tree-icon-item"></span>
+                        <a class="am-tree-label am-btn am-btn-link am-btn-xs">
+                        </a>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</section>
+</body>
+</html>

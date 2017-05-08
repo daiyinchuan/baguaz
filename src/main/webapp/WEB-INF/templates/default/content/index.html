@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#include("/default/common/head.html",{seo_title:SEO['site_title']+" - "+SEO['title']}){}-->
+</head>
+<body>
+<!--#include("/default/common/top.html"){}-->
+<div class="main">
+    <div class="col-left">
+        <div class="news-hot">
+            <div class="content">
+                <#content action="position" posid="2" order="listorder DESC" cache="600" num="4" var="data">
+                    <!--#for(r in data){-->
+                <h4 class="blue"><a href="${r['url']}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],18,'..')}</a></h4>
+                <p>
+                        <!--#if(rLP.index==1){-->
+                    <img src="${bc.thumb(r['thumb'],90,60)}" width="90" height="60"/>
+                        <!--#}-->
+                    ${bc.str_cut(r['description'],56,'..')}
+                </p>
+                <div class="bk20 hr"><hr /></div>
+                    <!--#}-->
+                </#content>
+            </div>
+        </div>
+        <div class="slide" style="width: 331px;">
+            <div class="FocusPic">
+                <#content action="position" posid="1" order="listorder DESC" cache="600" thumb="1" num="5" var="data">
+                    <div class="content" id="main-slide">
+                        <div class="changeDiv">
+                            <!--#for(r in data){-->
+                            <a href="${r['url']}" target="_blank" title="${bc.str_cut(r['title'],15)}">
+                                <img src="${bc.thumb(r['thumb'],560,400)}" alt="${r['title']}" width="331" height="355" />
+                            </a>
+                            <!--#}-->
+                        </div>
+                    </div>
+                </#content>
+            </div>
+        </div>
+        <div class="bk10"></div>
+        <div class="box">
+            <h5>图片新闻</h5>
+            <#content  action="position" posid="12" thumb="1" order="listorder DESC" cache="600" num="10" var="data">
+                <ul class="content news-photo picbig">
+                    <!--#for(r in data){-->
+                    <li>
+                        <div class="img-wrap">
+                            <a href="${r['url']}" target="_blank" title="${r['title']}"><img width="110px" height="85px" src="${bc.thumb(r['thumb'],110,0)}" title="${r['title']}"/></a>
+                        </div>
+                        <a href="${r['url']}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],8,'..')}</a>
+                    </li>
+                    <!--#}-->
+                </ul>
+            </#content>
+        </div>
+        <div class="bk10"></div>
+        <!--#
+        var num=0;
+        var subcat=bc.subcat(0,0);
+        for(v in subcat){
+            num++;
+        -->
+        <div class="box cat-area" <!--#if(num%2!=0){-->style=" margin-right:10px"<!--#}-->>
+        	<h5 class="title-1">${v['catname']}<a href="${v['url']}" class="more">更多>></a></h5>
+	        <div class="content">
+	            <#content action="lists" catid="${v['catid']}" cache="600" order="updatetime DESC" thumb="1" num="1" var="info">
+	                <!--#for(r in info){-->
+	            <p>
+	                <img src="${bc.thumb(r['thumb'],90,60)}" width="90" height="60"/>
+	                <strong>
+	                    <a href="${r['url']}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],28)}</a>
+	                </strong>
+	                <br />${bc.str_cut(r['description'],100)}
+	            </p>
+	                <!--#}-->
+	            </#content>
+	            <div class="bk15 hr"></div>
+	            <#content action="lists" catid="${v['catid']}" cache="600" num="5" order="id DESC" var="info">
+	            <ul class="list lh24 f14">
+	                <!--#for(r in info){-->
+	                <li><a href="${r['url']}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],40)}</a></li>
+	                <!--#}-->
+	            </ul>
+	            </#content>
+	        </div>
+    	</div>
+        <!--# if(num%2==0){--><div class="bk10"></div><!--#}-->
+        <!--#
+            }
+        -->
+	</div>
+    <div class="col-auto">
+        <div class="box">
+            <h5 class="title-2">
+                <span class="rt fn f12 tab SwapTab">
+                <span class="fb"></span><span></span></span>排行
+            </h5>
+            <div class="tab-content">
+                <ul class="content digg">
+                    <#content action="hits" catid="0" num="10" order="views DESC" cache="600" var="data">
+                        <!--#for(r in data){-->
+                    <li><a href="${r['url']}" target="_blank" title="${r['title']}">${r['title']}</a></li>
+                        <!--#}-->
+                    </#content>
+                </ul>
+                <ul class="content digg hidden">
+                    <#content action="hits" catid="0" num="10" cache="600" order="views DESC" var="data">
+                        <!--#for(r in data){-->
+                    <li><a href="${r['url']}" target="_blank">${r['title']}</a></li>
+                        <!--#}-->
+                    </#content>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(function(){
+        new slide("#main-slide","cur",331,355,1);//焦点图
+        new SwapTab(".SwapTab","span",".tab-content","ul","fb");//排行TAB
+    })
+</script>
+<div class="footer">
+    <!--#include("/default/common/bottom.html"){}-->
+</div>
+</body>
+</html>

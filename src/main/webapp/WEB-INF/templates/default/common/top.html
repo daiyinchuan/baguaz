@@ -1,0 +1,58 @@
+<div class="body-top">
+    <div class="content">
+        <#content action="position" posid="9" order="id" num="10" cache="600" var="data">
+    		<div id="announ">
+                 <ul>
+                 <!--#for(r in data){-->
+                      <li><a href="${r['url']}">${r['title']}</a></li>
+                 <!--#}-->
+                 </ul>
+            </div>
+        </#content>
+    </div>
+</div>
+<div class="header">
+    <div class="logo">
+        <a href="${bc.siteurl()}">
+            <img src="${IMG_PATH}/v9/logo.jpg" />
+        </a>
+    </div>
+
+    <div class="search" style="top: 15px;position: relative;">
+        <div class="bd">
+            <form action="/search/" method="get" target="_blank">
+                <input type="text" class="text" name="q" id="q"/>
+                <button type="submit" class="button">搜 索</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="banner">
+        <!--
+        <script language="javascript" src="/poster/index/show_poster?id=1"></script>
+        -->
+    </div>
+    <div class="bk3"></div>
+    <div class="nav-bar">
+        <map>
+            <#content action="category" catid="0" limit="25" order="listorder ASC" cache="3600" var="data">
+            <ul class="nav-site">
+                <li><a href="${bc.siteurl()}"><span>首页</span></a></li>
+                <!--#for(r in data){-->
+                <li class="line">|</li>
+                <li><a href="${r['url']}"><span>${r['catname']}</span></a></li>
+                <!--#}-->
+            </ul>
+            </#content>
+        </map>
+    </div>
+    <!--#if(!isEmpty(top_parentid)){-->
+    <div class="subnav">
+        <#content action="category" catid="${top_parentid}" limit="15" cache="3600" order="listorder ASC" var="data">
+        <!--#for(r in data){-->
+        <a href="${r['url']}">${r['catname']}</a><span> | </span>
+        <!--#}-->
+        </#content>
+    </div>
+    <!--#}-->
+</div>

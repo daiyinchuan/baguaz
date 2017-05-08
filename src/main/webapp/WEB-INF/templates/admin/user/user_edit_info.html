@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"修改站点",description:"",keywords:""}){}
+     -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript">
+    $(function (){
+        var validmsg="输入正确";
+        $("form").validator({
+            theme: 'simple_right',
+            fields:{
+                'realname':{
+                    rule:"真实姓名:required;length[2~20]",
+                    tip:"请输入真实姓名",
+                    ok:validmsg
+                },
+                'email':{
+                    rule:"E-mail:required;email",
+                    tip:"请输入E-mail",
+                    ok:validmsg
+                }
+            },
+            valid: function(form){
+                var me = this;
+                me.holdSubmit();
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/user/editInfo",
+                    data: $("form").serialize(),
+                    dataType: "json",
+                    success: function(ret){
+                        if(ret.code==${@C.success}){
+                            window.top.layer.alert(ret.msg);
+                        }
+                    },
+                    complete:function(ret){
+                        me.holdSubmit(false);
+                    }
+                });
+            },
+            invalid:function(form,errors){
+                window.top.layer.alert(errors[0]);
+            }
+        });
+
+        $('.submitBtn').on("click",function(event){
+            $('form').trigger("validate");
+        });
+    });
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <ul class="am-nav am-nav-pills">
+                <li class="am-active"><a href="javascript:void(0);">修改个人信息</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-form-group">
+                        <label class="am-u-sm-2 am-form-label">用户名：</label>
+                        <div class="am-u-sm-4 am-u-end am-padding-0">
+                            <div class="am-margin-top-xs">${username}</div>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label class="am-u-sm-2 am-form-label">最后登录时间：</label>
+                        <div class="am-u-sm-4 am-u-end am-padding-0">
+                            <div class="am-margin-top-xs">${bc.datefm(lastlogintime)}</div>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label class="am-u-sm-2 am-form-label">最后登录IP：</label>
+                        <div class="am-u-sm-4 am-u-end am-padding-0">
+                            <div class="am-margin-top-xs">${lastloginip}</div>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="realname" class="am-u-sm-2 am-form-label">真实姓名：</label>
+                        <div class="am-u-sm-3 am-u-end am-padding-0">
+                            <input name="realname" type="text" class="am-inline-block" value="${realname}"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="email" class="am-u-sm-2 am-form-label">E-mail：</label>
+                        <div class="am-u-sm-3 am-u-end am-padding-0">
+                            <input name="email" type="text" class="am-inline-block" value="${email}"/>
+                        </div>
+                    </div>
+                    <input type="hidden" name="dosubmit"/>
+                    <div class="am-form-group am-margin-top-lg">
+                        <label class="am-u-sm-2 am-form-label">
+                        </label>
+                        <div class="am-u-sm-4 am-u-end am-padding-0">
+                            <button type="button" class="submitBtn am-btn am-btn-default am-btn-sm">提交</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

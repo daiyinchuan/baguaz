@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#include("/default/common/head_page.html"){}-->
+</head>
+<body>
+<div id="header">
+    <!--#include("/default/common/top_page.html"){}-->
+</div>
+<div id="content">
+    <div class="col-left left-nav">
+        <h1>关于我们</h1>
+        <ul class="content">
+            <!--#
+            for(cid in arrchild_arr){
+                var icid=parseInt(cid);
+            -->
+                <li<!--#if(catid==icid)print(" class=\"cur\"");-->>
+                    <a href="${CATEGORYS[icid].url}">${CATEGORYS[icid].catname}</a>
+                </li>
+            <!--#
+            }
+            -->
+        </ul>
+        <div class="bottom"></div>
+    </div>
+    <div class="col-auto">
+        <img src="${IMG_PATH}/v9/about_ad.png" width="659" height="171" />
+        <h1 class="title">${title}</h1>
+        <div class="content">
+            ${content}
+        </div>
+    </div>
+</div>
+<div class="footer">
+    <!--#include("/default/common/bottom.html"){}-->
+</div>
+</body>
+</html>

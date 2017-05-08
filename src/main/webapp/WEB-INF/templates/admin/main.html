@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+	<!--#
+		include("/admin/head.html",{title:"baguazcms",description:"",keywords:""}){}
+    -->
+	<script type="text/javascript">
+
+	</script>
+</head>
+<body>
+<section>
+	<div class="am-g">
+		<div class="am-u-sm-8 am-u-md-6 am-u-lg-4 am-padding-sm">
+			<div class="am-panel am-panel-default">
+				<div class="am-panel-bd">
+					<p>您好，<!--# print(session.user.userName); --></p>
+					<p>所属角色：<!--# print(session.user.roleNames); --></p>
+					<p>上次登录时间：<!--# print(session.user.lastlogintime); --></p>
+					<p>上次登录IP：<!--# print(session.user.lastloginip); --></p>
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
+</section>
+</div>
+</body>
+</html>

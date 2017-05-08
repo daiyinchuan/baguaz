@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"修改站点",description:"",keywords:""}){}
+
+         var settingMap=@BgzKit.json2obj(setting);
+     -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('select[name="template"]').on("change",function(){
+                $('input[name="default_style"]').parent().remove();
+                var selos=$(this.selectedOptions).toArray().reverse();
+                $.each(selos, function (i,n) {
+                    var rad='<label class="am-radio-inline">';
+                    rad+='<input type="radio" name="default_style" value="'+n.value+'"/>'+n.value;
+                    rad+='</label>';
+                    $('label[for="default_style"]').next().prepend(rad);
+                });
+            });
+
+            var validmsg="输入正确";
+            $("form").validator({
+                theme: 'simple_bottom',
+                rules: {
+                    dburl:[/^(https?|s?ftp):\/\/\S+(\/)$/i,""]
+                },
+                fields:{
+                    'name':{
+                        rule:"站点名称:required",
+                        tip:"请输入站点名称",
+                        ok:validmsg
+                    },
+                    'domain':{
+                        rule:"站点域名:required,dburl",
+                        msg: {
+                            dburl: "格式应该为http://www.google.com/，请以‘/’结束",
+                        },
+                        tip:"请输入站点域名，格式应该为http://www.google.com/",
+                        ok:validmsg
+                    },
+                    'default_style':{
+                        rule:"默认风格:checked"
+                    }
+                },
+                valid: function(form){
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/site/edit",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.success}){
+                                window.top.layer.alert(ret.msg,function(index){
+                                    window.top.frames[1].datatable.ajax.reload();
+                                    window.top.layer.closeAll();
+                                })
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid:function(form,errors){
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+        });
+        var submitForm=function(){
+            $('form').trigger("validate");
+        }
+
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-sm">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-panel am-panel-default">
+                        <div class="am-panel-hd">基本配置</div>
+                        <div class="am-panel-bd">
+                            <div class="am-form-group">
+                                <label for="name" class="am-u-sm-3 am-form-label">站点名：</label>
+                                <div class="am-u-sm-4 am-u-end am-padding-0">
+                                    <input name="name" type="text" class="am-inline-block" value="${name}"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="domain" class="am-u-sm-3 am-form-label">站点域名：</label>
+                                <div class="am-u-sm-4 am-u-end am-padding-0">
+                                    <input name="domain" type="text" class="am-inline-block" value="${domain}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="am-panel am-panel-default">
+                        <div class="am-panel-hd">SEO配置</div>
+                        <div class="am-panel-bd">
+                            <div class="am-form-group">
+                                <label for="site_title" class="am-u-sm-3 am-form-label">
+                                    站点标题
+                                </label>
+                                <div class="am-u-sm-8 am-u-end am-padding-left-0">
+                                    <input name="site_title" type="text" value="${site_title}" />
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="site_title" class="am-u-sm-3 am-form-label">
+                                    首页标题
+                                </label>
+                                <div class="am-u-sm-8 am-u-end am-padding-left-0">
+                                    <input name="setting[index_title]" type="text" value="${settingMap['index_title']}" />
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="keywords" class="am-u-sm-3 am-form-label">
+                                    站点关键词
+                                    <p>中间用半角逗号隔开</p>
+                                </label>
+                                <div class="am-u-sm-8 am-u-end am-padding-0">
+                                    <textarea name="keywords" rows="5" cols="30">${keywords}</textarea>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="description" class="am-u-sm-3 am-form-label">
+                                    站点描述
+                                </label>
+                                <div class="am-u-sm-8 am-u-end am-padding-0">
+                                    <textarea name="description" rows="5" cols="30">${description}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="am-panel am-panel-default">
+                        <div class="am-panel-hd">模板风格配置</div>
+                        <div class="am-panel-bd">
+                            <div class="am-form-group">
+                                <label for="template" class="am-u-sm-3 am-form-label">可用风格：</label>
+                                <div class="am-u-sm-3 am-u-end am-padding-0">
+                                    <select multiple name="template">
+                                        <!--#
+                                            for(tpl in templatelist){
+                                                if(strutil.contain(template,tpl.dirname)){
+                                                    print('<option selected value="'+tpl.dirname+'">'+tpl.name+'</option>');
+                                                }else{
+                                                    print('<option value="'+tpl.dirname+'">'+tpl.name+'</option>');
+                                                }
+                                            }
+                                        -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="default_style" class="am-u-sm-3 am-form-label">默认风格：</label>
+                                <div class="am-u-sm-8 am-u-end am-padding-0">
+                                    <!--#
+                                        var tpls=strutil.split(template,"\\|");
+                                        for(tpl in tpls){
+                                    -->
+                                    <label class="am-radio-inline">
+                                        <input type="radio" name="default_style" value="${tpl}" <!--#if(tpl==default_style){println("checked");}-->/>${tpl}
+                                    </label>
+                                    <!--#
+                                        }
+                                    -->
+                                    <div class="am-inline" style="position: absolute;top:7px;"><span class="msg-box" for="default_style"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="am-panel am-panel-default">
+                        <div class="am-panel-hd">其他配置</div>
+                        <div class="am-panel-bd">
+                            <div class="am-form-group">
+                                <label for="name" class="am-u-sm-3 am-form-label">首页访问静态化：</label>
+                                <div class="am-u-sm-8 am-u-end am-padding-0">
+                                    <label class="am-radio-inline">
+                                        <input type="radio" name="setting[index_ishtml]" value="1" <!--# if(settingMap['index_ishtml']==1){print("checked");} -->/> 是
+                                    </label>
+                                    <label class="am-radio-inline">
+                                        <input type="radio" name="setting[index_ishtml]" value="0" <!--# if(settingMap['index_ishtml']==0){print("checked");} -->/> 否
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="name" class="am-u-sm-3 am-form-label">社会化分享代码：</label>
+                                <div class="am-u-sm-9 am-u-end am-padding-0">
+                                    <textarea name="setting[social_share_code]" rows="10" cols="50">${settingMap['social_share_code']!}</textarea>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="name" class="am-u-sm-3 am-form-label">社会化评论代码：</label>
+                                <div class="am-u-sm-9 am-u-end am-padding-0">
+                                    <textarea name="setting[social_comment_code]" rows="5" cols="50">${settingMap['social_comment_code']!}</textarea>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="name" class="am-u-sm-3 am-form-label">社会化推荐代码：</label>
+                                <div class="am-u-sm-9 am-u-end am-padding-0">
+                                    <textarea name="setting[social_tuijian_code]" rows="10" cols="50">${settingMap['social_tuijian_code']!}</textarea>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="name" class="am-u-sm-3 am-form-label">网站流量统计代码：</label>
+                                <div class="am-u-sm-9 am-u-end am-padding-0">
+                                    <textarea name="setting[pvetc_stati_code]" rows="10" cols="50">${settingMap['pvetc_stati_code']!}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="siteid" value="${siteid}"/>
+                    <input type="hidden" name="dosubmit"/>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

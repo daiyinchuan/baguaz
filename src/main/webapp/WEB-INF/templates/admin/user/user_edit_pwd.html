@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"修改站点",description:"",keywords:""}){}
+     -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/sha256.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/base64.js"></script>
+    <script type="text/javascript">
+    $(function (){
+        var validmsg="输入正确";
+        $("form").validator({
+            theme: 'simple_right',
+            fields:{
+                'oldpwd':{
+                    rule:"旧密码:required;length[6~20]",
+                    tip:"请输入旧密码",
+                    ok:validmsg
+                },
+                'password':{
+                    rule:"新密码:required;length[6~20]",
+                    tip:"请输入新密码",
+                    ok:validmsg
+                },
+                'renewpwd':{
+                    rule:"重复新密码:required;match[password]",
+                    tip:"请输入重复新密码",
+                    ok:validmsg
+                }
+            },
+            valid: function(form){
+                var data=$("form").serializeArray();
+                _.map(data,function(f){
+                    if(f.name=='oldpwd' || f.name=='password' || f.name=='renewpwd'){
+                        f.value=Base64.encode(sha256_digest("${username}"+f.value));
+                    }
+                });
+
+                var me = this;
+                me.holdSubmit();
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/user/editPwd",
+                    data: data,
+                    dataType: "json",
+                    success: function(ret){
+                        if(ret.code==${@C.success}){
+                            window.top.layer.alert(ret.msg);
+                        }else{
+                            window.top.layer.alert(ret.msg);
+                        }
+                    },
+                    complete:function(ret){
+                        me.holdSubmit(false);
+                    }
+                });
+            },
+            invalid:function(form,errors){
+                window.top.layer.alert(errors[0]);
+            }
+        });
+
+        $('.submitBtn').on("click",function(event){
+            $('form').trigger("validate");
+        });
+    });
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <ul class="am-nav am-nav-pills">
+                <li class="am-active"><a href="javascript:void(0);">修改密码</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-form-group">
+                        <label class="am-u-sm-2 am-form-label">用户名：</label>
+                        <div class="am-u-sm-4 am-u-end am-padding-0">
+                            <div class="am-margin-top-xs">${username}（${realname}）</div>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label class="am-u-sm-2 am-form-label">E-mail：</label>
+                        <div class="am-u-sm-4 am-u-end am-padding-0">
+                            <div class="am-margin-top-xs">${email}</div>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="oldpwd" class="am-u-sm-2 am-form-label">旧密码：</label>
+                        <div class="am-u-sm-3 am-u-end am-padding-0">
+                            <input name="oldpwd" id="oldpwd" type="password" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="password" class="am-u-sm-2 am-form-label">新密码：</label>
+                        <div class="am-u-sm-3 am-u-end am-padding-0">
+                            <input name="password" type="password" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="renewpwd" class="am-u-sm-2 am-form-label">重复新密码：</label>
+                        <div class="am-u-sm-3 am-u-end am-padding-0">
+                            <input name="renewpwd" type="password" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <input type="hidden" name="dosubmit"/>
+                    <div class="am-form-group am-margin-top-lg">
+                        <label class="am-u-sm-2 am-form-label">
+                        </label>
+                        <div class="am-u-sm-4 am-u-end am-padding-0">
+                            <button type="button" class="submitBtn am-btn am-btn-default am-btn-sm">提交</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

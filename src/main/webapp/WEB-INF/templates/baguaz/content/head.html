@@ -1,0 +1,46 @@
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<title>${SEO['title']}</title>
+<meta name="keywords" content="${SEO['keywords']}">
+<meta name="description" content="${SEO['description']}">
+
+<link rel='stylesheet' id='reset-css'  href='${CSS_PATH}/reset1.css' type='text/css' media='all' />
+<link rel='stylesheet' id='superfish-css'  href='${CSS_PATH}/superfish.css' type='text/css' media='all' />
+<link rel='stylesheet' id='fontawsome-css'  href='${CSS_PATH}/font-awsome/css/font-awesome.css' type='text/css' media='all' />
+<link rel='stylesheet' id='orbit-css-css'  href='${CSS_PATH}/orbit.css' type='text/css' media='all' />
+<link rel='stylesheet' id='style-css'  href='${CSS_PATH}/style.css' type='text/css' media='all' />
+<link rel='stylesheet' id='color-scheme-css'  href='${CSS_PATH}/color/green.css' type='text/css' media='all' />
+<link rel="stylesheet" href="${CSS_PATH}/zerogrid.css" type="text/css" media="screen">
+<link rel="stylesheet" href="${CSS_PATH}/responsive.css" type="text/css" media="screen">
+<script type='text/javascript' src='${JS_PATH}/jquery.min.js'></script>
+<script type='text/javascript' src='${JS_PATH}/jquery-migrate.min.js'></script>
+<script type='text/javascript' src='${JS_PATH}/jquery.carouFredSel-6.2.1-packed.js'></script>
+<script type='text/javascript' src='${JS_PATH}/hoverIntent.js'></script>
+<script type='text/javascript' src='${JS_PATH}/superfish.js'></script>
+<script type='text/javascript' src='${JS_PATH}/orbit.min.js'></script>
+<script type='text/javascript' src="${JS_PATH}/css3-mediaqueries.js"></script>
+
+<script type="text/javascript" language="javascript">
+    $(function() {
+        /* Start Orbit Slider
+        $(window).load(function() {
+            $('.post-gallery').orbit({
+                animation: 'fade',
+            });
+        });
+        End Orbit Slider */
+
+        /* Start Super fish */
+        jQuery(document).ready(function(){
+            jQuery('ul.sf-menu').superfish({
+                delay:         100,
+                speed:         'fast',
+                speedOut:      'fast',
+            });
+        });
+        /* End Of Super fish */
+    });
+</script>
+
+${bc.pvetc_stati_code()}

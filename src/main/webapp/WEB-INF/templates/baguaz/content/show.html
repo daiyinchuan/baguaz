@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]>
+<html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]>
+<html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]>
+<html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="en"> <!--<![endif]-->
+<head>
+    <!--#include("/baguaz/content/head.html"){}-->
+    <style type="text/css">
+        .jiathis_style{
+            float: right;
+            margin: 0 20px 20px;
+        }
+    </style>
+</head>
+
+<body class="single single-post postid-49 single-format-standard">
+
+<!-- Start Header -->
+<!--#include("/baguaz/content/top.html"){}-->
+<!-- End Header -->
+
+<!-- Start Main Container -->
+<div class="container zerogrid">
+
+    <!-- Start Posts Container -->
+    <div class="col-2-3" id="post-container">
+        <div class="wrap-col">
+
+            <!-- Start Post Item -->
+            <div class="post">
+                <div class="post-margin">
+                    <h5>${title}</h5>
+                    <ul class="post-status" style="margin-top: 5px;margin-left: 5px;">
+                        <li><i class="fa fa-clock-o"></i>${bc.datefm(inputtime,'yyyy-MM-dd')}</li>
+                        <li>点击<span id="hits" style="margin-left: 5px;"></span></li>
+                    </ul>
+                    <div class="clear"></div>
+                </div>
+                <div class="post-margin">
+                    ${content}
+                    <div class="clear"></div>
+                </div>
+
+                <!-- Post Social -->
+                ${bc.social_share_code()}
+                <!-- End Post Social -->
+                <div class="clear"></div>
+            </div>
+            <!-- End Post Item -->
+
+        <#content action="relation" relation="${relation}" num="5" var="data">
+            <!--#if(!isEmpty(data)){-->
+            <div class="post">
+                <div class="post-margin">
+                    <!--#for(r in data){-->
+                    <!-- Start Related Item -->
+                    <div class="related-posts">
+                        <div class="post-avatar">
+                            <div class="avatar-frame"></div>
+                            <img width="70" height="70" src="${bc.thumb(r['thumb'],70,70,false)}"
+                                 class="attachment-post-widget #"/></div>
+                        <div class="related-posts-aligned">
+                            <h6><a href="${r.url}">${r.title}</a></h6>
+                            <p>${r.description}</p>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <!-- End Related Item -->
+                    <!--#}-->
+                    <div class="clear"></div>
+                </div>
+            </div>
+            <!--#}-->
+        </#content>
+
+            <!--#
+                var stc=bc.social_tuijian_code();
+                if(!isEmpty(stc)){
+            -->
+            <div class="comment-container">
+                ${stc}
+            </div>
+            <div class="spacing-30"></div>
+            <!--# } -->
+
+            <!--#
+                var scc=bc.social_comment_code();
+                if(!isEmpty(scc)){
+            -->
+            <div class="comment-container">
+                ${scc}
+            </div>
+            <!--# } -->
+            <div class="clear"></div>
+        </div>
+    </div>
+    <!-- End Posts Container -->
+
+    <!-- Start Sidebar -->
+    <div class="col-1-3">
+        <div class="wrap-col">
+            <div class="widget-container">
+                <form role="search" method="get" id="searchform" class="searchform"
+                      action="/search/">
+                    <div>
+                        <label class="screen-reader-text" for="kw">Search for:</label>
+                        <input type="text" class="searchtxt" name="q" id="q" value="${q!}"/>
+                        <input type="submit" id="searchsubmit" value="搜  索"/>
+                    </div>
+                </form>
+                <div class="clear"></div>
+            </div>
+            <div class="widget-container">
+                <h6 class="widget-title">热门</h6>
+                <!-- Start Widget -->
+                <#content action="hits" catid="${CAT.catid}" num="6" order="views DESC" cache="3600" var="data">
+                    <ul class="widget-recent-posts">
+                        <!--#for(r in data){-->
+                        <li>
+                            <div class="post-image">
+                                <div class="post-mask"></div>
+                                <img width="70" height="70" src="${bc.thumb(r['thumb'],70,70,false)}"
+                                     class="attachment-post-widget #"/></div>
+                            <h6><a href="${r.url}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],12,'..')}</a>
+                            </h6>
+                            <span>${bc.datefm(r['inputtime'],'yyyy-MM-dd')}</span>
+
+                            <div class="clear"></div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                </#content>
+                <!-- End Widget -->
+                <div class="clear"></div>
+            </div>
+            <div class="widget-container">
+                <h6 class="widget-title">最新</h6>
+                <!-- Start Widget -->
+                <#content action="lists" catid="${CAT.catid}" cache="3600" num="6" order="inputtime DESC" moreinfo="0" var="data">
+                    <ul class="widget-recent-posts">
+                        <!--#for(r in data){-->
+                        <li>
+                            <div class="post-image">
+                                <div class="post-mask"></div>
+                                <img width="70" height="70" src="${bc.thumb(r['thumb'],70,70,false)}"
+                                     class="attachment-post-widget #"/></div>
+                            <h6><a href="${r.url}" target="_blank" title="${r['title']}">${bc.str_cut(r['title'],12,'..')}</a>
+                            </h6>
+                            <span>${bc.datefm(r['inputtime'],'yyyy-MM-dd')}</span>
+
+                            <div class="clear"></div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                </#content>
+                <!-- End Widget -->
+                <div class="clear"></div>
+            </div>
+            <div class="clear"></div>
+        </div>
+    </div>
+    <!-- End Sidebar -->
+
+    <div class="clear"></div>
+</div>
+<!-- End Main Container -->
+
+
+<!-- Start Footer -->
+<!--#include("/baguaz/content/bottom.html"){}-->
+<!-- End Footer -->
+<script language="JavaScript" src="/hits/getCount?id=${id}&modelid=${CAT.modelid}"></script>
+</body>
+</html>

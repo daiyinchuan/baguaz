@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!--#
+		include("/admin/head.html",{title:"添加外部链接",description:"",keywords:""}){}
+    -->
+	<link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+	<link rel="stylesheet" href="${JS_PATH}/kindeditor/themes/default/default.css" type="text/css"/>
+	<style type="text/css">
+		#tab4 p{
+			font-weight: 500;
+			margin: 0;
+		}
+	</style>
+	<script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+	<script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+	<script type="text/javascript" charset="utf-8" src="${JS_PATH}/kindeditor/kindeditor-all.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			<!--#
+				if(isEmpty(cat)){
+					print('$("#catmngbar li").eq(3).addClass("am-active").find("a").attr("href","javascript:void(0)");');
+				}
+
+                var opt=isEmpty(cat)?"add":"edit";
+
+                var retcode=isEmpty(cat)?@C.scs_dataadd:@C.success;
+			-->
+
+			var validmsg="输入正确";
+			$("form").validator({
+				theme: 'simple_right',
+				fields:{
+					'info[catname]':{
+						rule:"栏目名称:required,length[~30]",
+						tip:"请输入栏目名称",
+						ok:validmsg
+					},
+					'info[url]':{
+						rule:"链接地址:required,url",
+						tip:"请输入链接地址",
+						ok:validmsg
+					}
+				},
+				valid: function(form){
+					var me = this;
+					// 提交表单之前，hold住表单，防止重复提交
+					me.holdSubmit();
+					$.ajax({
+						type: "POST",
+						url: "/admin/category/${opt}",
+						data: $("form").serialize(),
+						dataType: "json",
+						success: function(ret){
+							if(ret.code==${retcode}){
+								window.top.layer.alert(ret.msg,function(index){
+									window.top.layer.close(index)
+									location.href="/admin/category/init"
+								})
+							}
+						},
+						complete:function(ret){
+							me.holdSubmit(false);
+						}
+					});
+				},
+				invalid:function(form,errors){
+					window.top.layer.alert(errors[0]);
+				}
+			});
+
+			$('.submitBtn').on("click",function(event){
+				$('form').trigger("validate");
+			});
+
+			KindEditor.ready(function(K) {
+				var editor = K.editor({
+					fileManagerJson:"/admin/attachment/manager",
+					allowFileManager:true,
+					uploadJson:"/admin/attachment/upload",
+				});
+				$('.uploadBtn').click(function () {
+					editor.loadPlugin('image', function () {
+						editor.plugin.imageDialog({
+							imageUrl: $('input[name="info[image]"]').val(),
+							clickFn: function (url, title, width, height, border, align) {
+								$('input[name="info[image]"]').val(url);
+								editor.hideDialog();
+							}
+						});
+					});
+				});
+			});
+		});
+	</script>
+</head>
+<body>
+<section>
+	<div class="am-g">
+		<div class="am-u-sm-12 am-padding-sm">
+			<div id="catmngbar">
+				<!--#include("/admin/category/catmngbar.html"){}-->
+			</div>
+		</div>
+	</div>
+	<div class="am-g">
+		<div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+			<form class="am-form am-form-horizontal">
+				<fieldset>
+					<div class="am-tabs nolrs" data-am-tabs="{nolrs: 1}">
+						<ul class="am-tabs-nav am-nav am-nav-tabs">
+							<li class="am-active"><a href="#tab1">基本选项</a></li>
+						</ul>
+						<div class="am-tabs-bd">
+							<div class="am-tab-panel am-fade am-in am-active" id="tab1">
+								<div class="am-form-group">
+									<label for="info[parentid]" class="am-u-sm-2 am-form-label">上级栏目：</label>
+									<div class="am-u-sm-4 am-u-end am-padding-0">
+										<select name="info[parentid]">
+											<option value="0" selected>≡ 作为一级栏目 ≡</option>
+											<!--#
+                                                for(pcat in catlist){
+                                                    if(!isEmpty(cat) && cat.parentid==pcat.catid){
+                                                        print('<option selected value="'+pcat.catid+'">'+pcat.pos+pcat.catname+'</option>');
+                                                    }else{
+                                                        print('<option value="'+pcat.catid+'">'+pcat.pos+pcat.catname+'</option>');
+                                                    }
+                                                }
+                                            -->
+										</select>
+									</div>
+								</div>
+								<div class="am-form-group">
+									<label for="info[catname]" class="am-u-sm-2 am-form-label">栏目名称：</label>
+									<div class="am-u-sm-4 am-u-end am-padding-0">
+										<input name="info[catname]" type="text" class="am-inline-block"
+											   value="<!--#if(!isEmpty(cat)) print(cat.catname);-->"/>
+									</div>
+								</div>
+								<div class="am-form-group">
+									<label for="info[image]" class="am-u-sm-2 am-form-label">栏目图片：</label>
+									<div class="am-u-sm-4 am-padding-0">
+										<input name="info[image]" type="text"
+											   value="<!--#if(!isEmpty(cat)) print(cat.image);-->"/>
+									</div>
+									<div class="am-u-sm-2 am-u-end">
+										<button type="button" class="uploadBtn am-btn am-btn-default am-btn-xs">上传图片</button>
+									</div>
+								</div>
+								<div class="am-form-group">
+									<label for="info[url]" class="am-u-sm-2 am-form-label">链接地址：</label>
+									<div class="am-u-sm-4 am-u-end am-padding-0">
+										<input name="info[url]" class="am-inline-block" type="text"
+											   value="<!--#if(!isEmpty(cat)) print(cat.url);-->"/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<input type="hidden" name="info[catid]" value="<!--#if(!isEmpty(cat)) print(cat.catid);-->"/>
+					<input type="hidden" name="info[type]" value="2"/>
+					<input type="hidden" name="dosubmit"/>
+					<div class="am-form-group am-margin-sm">
+						<label class="am-u-sm-2 am-form-label">
+						</label>
+						<div class="am-u-sm-8 am-u-end am-padding-0">
+							<button type="button" class="submitBtn am-btn am-btn-default am-btn-sm">提交</button>
+						</div>
+					</div>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+</section>
+</body>
+</html>

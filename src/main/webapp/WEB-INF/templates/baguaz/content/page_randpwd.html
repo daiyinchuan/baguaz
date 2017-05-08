@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]>
+<html class="ie ie6" lang="zh"> <![endif]-->
+<!--[if IE 7 ]>
+<html class="ie ie7" lang="zh"> <![endif]-->
+<!--[if IE 8 ]>
+<html class="ie ie8" lang="zh"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="zh"> <!--<![endif]-->
+<head>
+    <!--#include("/baguaz/content/head.html"){}-->
+    <link rel="stylesheet" href="${CSS_PATH}/amazeui.css" type="text/css"/>
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <style type="text/css">
+        #submitBtn {
+            border: none;
+            color: #FFFFFF;
+            background: #343434;
+            height: 35px;
+        }
+
+        #submitBtn:hover {
+            cursor: pointer;
+            background: #2ecc71;
+        }
+
+        .pwdRangeDesc {
+            background: #2ecc71;
+            color: #FFFFFF;
+            position: absolute;
+            right: -4px;
+            top: 50px;
+            padding: 0 5px 0 10px;
+            transform: rotate(30deg);
+            -ms-transform: rotate(30deg); /* IE 9 */
+            -moz-transform: rotate(30deg); /* Firefox */
+            -webkit-transform: rotate(30deg); /* Safari 和 Chrome */
+            -o-transform: rotate(30deg); /* Opera */
+        }
+
+        #pwdRet {
+            min-height: 280px;
+            word-wrap: break-word;
+            overflow-y: scroll;
+            height: 280px;
+        }
+        #diymsg{
+            padding: 0;
+            top: -5px;
+            color: #B2B3B5;
+            font-size: 1.0rem;
+            font-weight: 500;
+        }
+        #diymsg.msgcolor{
+            color:#DE130B;
+        }
+    </style>
+    <script type="text/javascript" src="${JS_PATH}/amazeui.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("form").validator({
+                theme: 'simple',
+                fields:{
+                    'pwdLenMin':{
+                        rule:"最小长度:required,integer[+]",
+                        target: "#1"
+                    },
+                    'pwdLenMax':{
+                        rule:"最大长度:required,integer[+],match[gte, pwdLenMin]",
+                        target: "#1"
+                    }
+                },
+                ignore: '.diyfg',
+                valid: function(form){
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "GET",
+                        url: "/tools/randPwd",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function (ret) {
+                            if (ret.code ==${@C.success}) {
+                                $("#pwdRet").html(ret.map.randPwd)
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                            $("#diymsg").removeClass("msgcolor")
+                        }
+                    });
+                },
+                invalid:function(form,errors){
+                    if(errors.length>=1){
+                        $("#diymsg").addClass("msgcolor")
+                    }
+                }
+            });
+
+            $('#submitBtn').on("click",function(){
+                $('form').trigger("submit");
+            });
+
+            $('input[type="radio"]').on("change",function(){
+                switch(this.value){
+                    case "1":
+                        $('form').data('validator').options.ignore = '.diyfg';
+                        break;
+                    case "2":
+                        $('form').data('validator').options.ignore = '.diyfg';
+                        break;
+                    case "9":
+                        $('form').data('validator').options.ignore = '';
+                }
+                $("#diymsg").removeClass("msgcolor")
+            })
+        });
+    </script>
+</head>
+<body>
+<!-- Start Header -->
+<!--#include("/baguaz/content/top.html"){}-->
+<!-- End Header -->
+
+<!-- Start Main Container -->
+<div class="container zerogrid" style="    min-height: 358px;">
+    <div class="col-2-4">
+        <div class="wrap-col">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-panel am-panel-default">
+                        <div class="am-panel-hd" style="background-color: #343434;color: #FFF;">
+                            生成随机密码
+                        </div>
+                        <div class="am-panel-bd" style="position:relative;">
+                            <div class="am-form-group">
+                                <label>
+                                    <div class="am-u-sm-1">
+                                        <input type="radio" name="pwdRange" value="1">
+                                    </div>
+                                    <div class="am-u-sm-4 am-u-end" style="top: -2px;">
+                                        6~16
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="am-form-group">
+                                <label>
+                                    <div class="am-u-sm-1">
+                                        <input type="radio" checked name="pwdRange" value="2">
+                                    </div>
+                                    <div class="am-u-sm-4 am-u-end" style="top: -2px;">
+                                        18~24
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="am-form-group">
+                                <label>
+                                    <div class="am-u-sm-1">
+                                        <input type="radio" name="pwdRange" value="9">
+                                    </div>
+                                    <div class="am-u-sm-2" style="top: -2px;padding: 0;padding-left: 1.5rem;">
+                                        <input type="text" class="diyfg" name="pwdLenMin">
+                                    </div>
+                                    <div class="am-u-sm-1" style="padding: 0;text-align: center;">~</div>
+                                    <div class="am-u-sm-2" style="top: -2px;padding: 0;padding-right: 1.5rem;">
+                                        <input type="text" class="diyfg" name="pwdLenMax">
+                                    </div>
+                                    <div id="diymsg" class="am-u-sm-5 am-u-end">
+                                       （最大长度必须大于等于最小长度，且都为正整数）
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="pwdRangeDesc">密码范围（最小～最大）</div>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <div class="am-u-sm-12" style="text-align: center;">
+                            <button type="button" id="submitBtn" class="am-btn am-btn-xs">生成>></button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+    <div class="col-2-4">
+        <div class="wrap-col" style="color: #11B517;">
+            <div class="am-panel am-panel-default">
+                <div class="am-panel-bd" id="pwdRet">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="clear"></div>
+</div>
+<!-- End Main Container -->
+
+<!-- Start Footer -->
+<!--#include("/baguaz/content/bottom.html"){}-->
+<!-- End Footer -->
+</body>
+</html>

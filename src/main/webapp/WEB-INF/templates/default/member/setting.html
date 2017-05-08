@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        include("/default/common/head_community.html"){}
+    -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${CSS_PATH}/commun.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/layer/layer.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/plupload.full.min.js"></script>
+    <script type="text/javascript">
+        $(function(){
+            var uploader = new plupload.Uploader({
+                browse_button: 'uploadBtn', // this can be an id of a DOM element or the DOM element itself
+                url: '/attachment/upload'
+            });
+            uploader.init();
+            uploader.bind('FilesAdded', function(up, files) {
+                uploader.start();
+            });
+            uploader.bind('FileUploaded',function(up,files,ret){
+                var resp=ret.response;
+                if(resp.indexOf("error")>0){
+                    var err=$.parseJSON(resp)
+                    if(err.error==1){
+                        window.top.layer.alert(err.message)
+                        return;
+                    }
+                }
+                $("#uploadBtn").find("img").attr("src",resp)
+                $("#uploadBtn").next().val(resp)
+            })
+
+
+            $("form#f_setting").validator({
+                theme: 'simple_bottom',
+                fields: {
+                    'nickname': {
+                        rule: "昵称:required",
+                    },
+                },
+                valid: function (form) {
+                    var me = this;
+                    me.holdSubmit(true);
+                    var $submitBtn = $(form).find(".submitBtn");
+                    $submitBtn.html('<i class="am-icon-reply am-margin-right-xs"></i>保存设置<i class="am-icon-spinner am-icon-pulse am-margin-left-xs"></i>')
+                            .addClass("am-disabled")
+                    $.ajax({
+                        type: "POST",
+                        url: "/user/setting",
+                        data: $(form).serialize(),
+                        dataType: "json",
+                        success: function (ret) {
+                            if (ret.code ==${@C.success}) {
+                                window.top.layer.alert(ret.msg)
+                            }
+                        },
+                        complete: function (ret) {
+                            me.holdSubmit(false);
+                            $submitBtn.html('保存设置').removeClass("am-disabled")
+                        }
+                    });
+                }
+            });
+
+            $("#f_setting").delegate(".submitBtn", "click", function () {
+                $('form#f_setting').trigger("validate");
+            })
+        })
+    </script>
+</head>
+<body>
+<header>
+    <!--#include("/default/common/top_community.html"){}-->
+</header>
+<section class="commu-secstyle">
+    <div class="am-g am-g-fixed">
+        <div class="am-u-md-2 am-u-sm-0 am-padding-xs">
+            <!--#include("/default/common/sub_user.html",{sub:"setting"}){}-->
+        </div>
+        <div class="am-u-md-10 am-u-sm-12 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    设置
+                </div>
+                <div class="am-panel-bd">
+                    <form id="f_setting" class="am-form am-form-horizontal">
+                        <fieldset style="margin-top: 1rem;">
+                            <div class="am-form-group">
+                                <label for="nickname" class="am-u-md-2 am-u-sm-0 am-form-label">昵称</label>
+                                <div class="am-u-md-4 am-u-sm-12 am-u-end">
+                                    <input name="nickname" type="text" value="${nickname!}" class="am-inline-block"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="email" class="am-u-md-2 am-u-sm-0 am-form-label">电子邮件</label>
+                                <div class="am-u-md-4 am-u-sm-12 am-u-end">
+                                    <input name="email" disabled type="text" value="${email}"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="signature" class="am-u-md-2 am-u-sm-0 am-form-label">个性签名</label>
+                                <div class="am-u-md-6 am-u-sm-12 am-u-end">
+                                    <input name="signature" type="text" value="${signature!}" class="am-inline-block"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label for="avatar" class="am-u-md-2 am-u-sm-0 am-form-label">头像</label>
+                                <div id="container" class="am-u-md-6 am-u-sm-12 am-u-end">
+                                    <a id="uploadBtn" href="javascript:void(0)"><img style="width: 73px;" alt="选择图片" src="${avatar!}"></a>
+                                    <input name="avatar" type="hidden" value="${avatar!}"/>
+                                </div>
+                            </div>
+                            <div class="am-form-group">
+                                <label class="am-u-md-2 am-u-sm-0 am-form-label"></label>
+                                <input type="hidden" name="dosubmit"/>
+                                <div class="am-u-md-6 am-u-sm-12 am-u-end">
+                                    <button type="button" class="submitBtn am-btn am-btn-primary am-btn-xs">保存设置</button>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <!--#include("/default/common/bottom_community.html"){}-->
+</footer>
+</body>
+</html>

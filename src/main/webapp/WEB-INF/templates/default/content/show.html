@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#include("/default/common/head.html"){}-->
+</head>
+<body>
+<!--#include("/default/common/top.html"){}-->
+<div class="main">
+    <div class="col-left">
+        <div class="crumbs">
+            <a href="${bc.siteurl()}">首页</a>
+            <span> &gt; </span>${bc.catpos(catid)} 正文
+        </div>
+        <div id="Article">
+            <h1>${title}<br /><span>${bc.datefm(inputtime)}&nbsp;&nbsp;&nbsp;来源：${copyfrom}&nbsp;&nbsp;&nbsp; 点击：</span><span id="hits"></span></h1>
+            <!--# if(!isEmpty(description)){--><div class="summary" >${description}</div><!--#}-->
+            <div class="content" style="padding: 10px 0 10px 0;">${content}</div>
+
+            <!--#
+                if(!isEmpty(gimage)){
+                    var gimageMap=bc.json2obj(gimage);
+                    for(gmE in gimageMap!){
+            -->
+            <img src="${gmE.value.url}" alt="${gmE.value.desc}" /></br>
+            <!--#
+                    }
+                }
+            -->
+
+            <!--#
+                if(!isEmpty(gfile)){
+                    var gfileMap=bc.json2obj(gfile);
+            -->
+            <div><a target="_blank" href="${gfileMap[0].url!}">${gfileMap[0].desc!}</a></div></br>
+            <div><a target="_blank" href="${gfileMap[1].url!}">${gfileMap[1].desc!}</a></div></br>
+            <!--#
+                }
+            -->
+
+            <!--#
+                if(!isEmpty(gaudio)){
+                    var gaudioMap=bc.json2obj(gaudio);
+                    if(!isEmpty(gaudioMap)){
+            -->
+            <audio src="${gaudioMap[0].url}" controls="controls"></audio></br>
+            <!--#   }
+                }
+            -->
+
+            <!--#
+                if(!isEmpty(gvideo)){
+                    var gvideoMap=bc.json2obj(gvideo);
+                    if(!isEmpty(gvideoMap)){
+            -->
+            <video src="${gvideoMap[0].url}" controls="controls"></video></br>
+            <!--#
+                    }
+                }
+            -->
+
+            <p class="f14" style="padding-top: 10px;">
+                <strong>上一篇：</strong><a href="${previous_page['url']!}">${previous_page['title']!}</a><br />
+                <strong>下一篇：</strong><a href="${next_page['url']!}">${next_page['title']!}</a>
+            </p>
+            <#content action="relation" relation="${relation}" num="5" var="data">
+            <!--#if(!isEmpty(data)){-->
+            <div class="related">
+                <h5 class="blue">延伸阅读：</h5>
+                <ul class="list blue lh24 f14">
+                    <!--#for(r in data){-->
+                    <li>
+                        <a href="${r['url']}" target="_blank">${r['title']}</a><span>(${bc.datefm(r['inputtime'],'yyyy-MM-dd')})</span>
+                    </li>
+                    <!--#}-->
+                </ul>
+            </div>
+            <!--#}-->
+            </#content>
+            <div class="bk15"></div>
+            ${bc.social_share_code()}
+            <div class="bk15"></div>
+            ${bc.social_comment_code()}
+        </div>
+        <div class="bk10"></div>
+    </div>
+    <div class="col-auto">
+        <div class="box">
+            <h5 class="title-2">频道总排行</h5>
+            <#content action="hits" catid="${CAT.catid}" num="10" cache="600" order="views DESC" var="data">
+                <ul class="content digg">
+                    <!--#for(r in data){-->
+                    <li><a href="${r['url']}" target="_blank">${r['title']}</a></li>
+                    <!--#}-->
+                </ul>
+            </#content>
+        </div>
+        <div class="bk10"></div>
+        <div class="box">
+            <h5 class="title-2">频道本月排行</h5>
+            <#content action="hits" catid="${CAT.catid}" num="8" cache="600" order="monthviews DESC" var="data">
+                <ul class="content rank">
+                    <!--#for(r in data){-->
+                    <li>
+                        <span>${r['monthviews']}</span>
+                        <a href="${r['url']}" class="title" title="${r['title']}">${bc.str_cut(r['title'],56,'...')}</a>
+                    </li>
+                    <!--#}-->
+                </ul>
+            </#content>
+        </div>
+    </div>
+</div>
+<div class="footer">
+    <!--#include("/default/common/bottom.html"){}-->
+</div>
+<script language="JavaScript" src="/hits/getCount?id=${id}&modelid=${CAT.modelid}"></script>
+</body>
+</html>

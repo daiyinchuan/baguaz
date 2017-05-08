@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        include("/default/common/head_community.html"){}
+    -->
+    <link rel="stylesheet" type="text/css" href="${JS_PATH}/wangEditor/css/wangEditor.css"/>
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${CSS_PATH}/commun.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/wangEditor/js/wangEditor.min.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/wangEditor/js/quote-menu.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/laytpl.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/layer/layer.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/purl.js"></script>
+
+    <script id="tpl-floor-reply" type="text/html">
+        <form id="f-floor-reply" class="am-form am-form-horizontal">
+            <fieldset style="margin-top: 1rem;">
+                <div class="am-form-group editor-area am-margin-bottom-xs" style="position: relative;">
+                    <textarea id="fr-editor" name="content" style="height: 230px;"></textarea>
+                </div>
+                <div class="am-form-group">
+                    <input type="hidden" name="dosubmit"/>
+                    <input type="hidden" name="topid" value="${id}"/>
+                    <input type="hidden" name="pid" value="{{d.pid}}"/>
+                    <input type="hidden" name="targetAuthorid" value="{{d.targetAuthorid}}"/>
+                    <button type="button" class="submitBtn am-btn am-btn-primary am-btn-xs">
+                        <i class="am-icon-reply am-margin-right-xs"></i>回复</button>
+                </div>
+            </fieldset>
+        </form>
+    </script>
+
+    <script type="text/javascript">
+        function gotofloor($url,floor){
+            if(floor && floor>=0){
+                if(floor>${floor_count}){
+                    floor=${floor_count}
+                }
+                var $floor=$("#floor-"+floor)
+                if($floor.length==1){
+                    $("body,html").animate({scrollTop:$floor.offset().top},0);
+                    $floor.addClass("obvious")
+                    setTimeout(function(){
+                        $floor.removeClass("obvious")
+                    },1500)
+                }else{
+                    var page=Math.ceil(floor/10)//计算分页
+                    var file=$url.attr("file");
+                    file=file.substring(0,file.indexOf(".html"));
+                    var t=file.split("-")[1];
+                    if(page==1){
+                        location.href=$url.attr('directory')+"t-"+t+".html?f="+floor;
+                    }else{
+                        location.href=$url.attr('directory')+"t-"+t+"-p-"+page+".html?f="+floor;
+                    }
+                }
+            }
+        }
+
+        $(function () {
+            var $url=$.url();
+            var floor=$url.param("f");
+            gotofloor($url,floor);
+
+            $("#fixedtool a:eq(0)").on("click",function(){
+                $("body,html").animate({scrollTop:'0px'},0);
+            })
+            $("#fixedtool a:eq(1)").on("click",function(){
+                gotofloor($url,$(this).prev().val());
+            })
+            $("#fixedtool a:eq(3)").on("click",function(){
+                $("body,html").animate({scrollTop:$(document).height()},0);
+            })
+
+            wangEditor.config.printLog = false;
+
+            $("#floor-1").delegate(".del_topic","click",function(){
+                var topid=$(this).attr("topid")
+                window.top.layer.confirm("确认删除？",function(index){
+                    window.top.layer.close(index)
+                    $.ajax({
+                        type: "GET",
+                        url: "/community/delTopic",
+                        data: {topid:topid},
+                        dataType: "json",
+                        success: function (ret) {
+                            if (ret.code ==${@C.success}) {
+                                location.href = ret.map.url;
+                            }
+                        }
+                    });
+                }, function (index) {
+                    window.top.layer.close(index)
+                })
+            })
+
+            $(".floor").delegate(".del_reply","click",function(){
+                var replyid=$(this).attr("replyid")
+                window.top.layer.confirm("确认删除？",function(index){
+                    window.top.layer.close(index)
+                    $.ajax({
+                        type: "GET",
+                        url: "/community/delReply",
+                        data: {replyid:replyid},
+                        dataType: "json",
+                        success: function (ret) {
+                            if (ret.code ==${@C.success}) {
+                                location.href = ret.map.url;
+                            }
+                        }
+                    });
+                }, function (index) {
+                    window.top.layer.close(index)
+                })
+            })
+
+            window.$replycontrol = $("#reply-control");
+
+            $(".reply_topic").on("click", function () {
+                if(!window.deditor){
+                    load_reply_area()
+                }
+                $edittxt.parents(".am-g").removeClass("am-hide")
+                $("body,html").animate({scrollTop:$edittxt.offset().top},0);
+                $edittxt.focus();
+            })
+
+            $("#f_reply_topic").delegate(".submitBtn", "click", function () {
+                if($("#d-editor")[0].value=='<p><br><\/p>'){
+                    $("#d-editor")[0].value=''
+                }
+                $('form#f_reply_topic').trigger("validate");
+            })
+
+            $(".floor").delegate(".up_btn","click",function(){
+                $("body,html").animate({scrollTop:0},0);
+            })
+        })
+
+
+        var load_reply_area = function () {
+            window.deditor = new wangEditor('d-editor');
+            deditor.config.menus.unshift("quotepost")
+            deditor.config.menuFixed = false;
+            deditor.config.uploadImgUrl = '/attachment/upload';
+
+            deditor.config.uploadImgFns.onload = function (resultText, xhr) {
+                if(resultText.indexOf("error")>0){
+                    var err=$.parseJSON(resultText)
+                    if(err.error==1){
+                        window.top.layer.alert(err.message)
+                        return;
+                    }
+                }
+                deditor.command(null, 'insertHtml', '<img src="' + resultText + '" style="max-width:100%;"/>');
+            };
+
+            deditor.onchange = function () {
+                if($("#d-editor")[0].value=='<p><br><\/p>'){
+                    $("#d-editor")[0].value=''
+                }
+                $('#d-editor').trigger("validate");
+            };
+
+            deditor.create();
+
+            var $grippie=$("#f_reply_topic .grippie")
+            window.$edittxt=$("#f_reply_topic .wangEditor-txt");
+            var sh=$edittxt.height()
+            $grippie.on("click", function () {
+                $edittxt.height(sh+230)
+            })
+
+            $("form#f_reply_topic").validator({
+                theme: 'simple_bottom',
+                msgMaker: false,
+                fields: {
+                    'content': {
+                        rule: "内容:required",
+                    },
+                },
+                valid: function (form) {
+                    var me = this;
+                    me.holdSubmit(true);
+                    var $submitBtn = $(form).find(".submitBtn");
+                    $submitBtn.html('<i class="am-icon-reply am-margin-right-xs"></i>回复<i class="am-icon-spinner am-icon-pulse am-margin-left-xs"></i>')
+                            .addClass("am-disabled")
+                    $.ajax({
+                        type: "POST",
+                        url: "/community/reply",
+                        data: $(form).serialize(),
+                        dataType: "json",
+                        success: function (ret) {
+                            if (ret.code ==${@C.success}) {
+                                location.href=ret.map.url;
+                            }
+                        },
+                        complete: function (ret) {
+                            me.holdSubmit(false);
+                            $submitBtn.html('<i class="am-icon-reply am-margin-right-xs"></i>回复').removeClass("am-disabled")
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<header>
+    <!--#include("/default/common/top_community.html"){}-->
+</header>
+<section class="commu-secstyle">
+    <div class="am-g am-g-fixed">
+        <div class="am-u-md-9 am-u-sm-12 am-padding-xs">
+            <#community action="replys" topid="${id}" num="10" page="${page!1}" var="data,pages">
+
+            <!--# if(page=="1"){ -->
+            <div class="am-panel am-panel-default community-panel topic-panel" style="margin-bottom: -2px">
+                <div class="am-panel-bd">
+                    <div class="title">
+                        <span id="topic_title">${title}</span>
+                    </div>
+                    <div class="attr">
+                        <a class="topic_author" href="/user/${authorid}">${nickname}</a>
+                        <span>• ${bc.datehuman(inputtime)} • ${view}次浏览 • 更新${bc.datehuman(last_reply_time)} • </span>
+                        <a class="node" href="${SEC.url}">${SEC.name}</a>
+                    </div>
+                </div>
+                <div class="am-panel-bd am-nbfc" style="border-top: 1px #E5E5E5 solid;">
+                    <div class="topic_content">${content}</div>
+                    <ul class="am-nav am-nav-pills am-fr">
+                        <!--# if(session.member!=null){ -->
+                        <li><a class="reply_topic" href="javascript:void(0)"><i class="am-icon-reply am-margin-right-xs"></i>回复</a></li>
+                        <!--# } -->
+                    </ul>
+                </div>
+            </div>
+            <!--# }else{ -->
+            <div id="topid" class="am-hide">${id}</div>
+            <div class="topic_author am-hide"></div>
+            <div class="topic_content am-hide"></div>
+            <div class="am-panel am-panel-default community-panel am-margin-bottom-0">
+                <div class="am-panel-bd">
+                    <ul class="am-pagination" style="margin-top: 0;">
+                        ${pages}
+                    </ul>
+                    <div style="overflow: hidden;">
+                    	<!--# if(session.member!=null){ -->
+                        <button class="am-btn am-btn-primary am-btn-xs reply_topic am-fr"><i class="am-icon-reply am-margin-right-xs"></i>回复</button>
+                        <!--# } -->
+                    </div>
+                </div>
+            </div>
+            <!--# } -->
+
+            <div class="am-panel am-panel-default community-panel" style="margin-bottom: -2rem">
+                <div class="am-panel-bd" style="padding: 0;">
+                    <ul class="am-list reply-ul">
+                        <!--#
+                            for(r in data.list){
+                        -->
+                        <li id="floor-${r.floor}" class="floor">
+                            <div class="am-g">
+                                <div class="am-u-sm-12">
+                                    <div class="attr">
+                                        <a href="/user/${r.authorid}" class="am-fl am-inline-block"><img src="${bc.thumb(r.avatar,48,-1)}"
+                                                                                                   alt="${r.nickname}"
+                                                                                                   style="width: 48px;"></a>
+                                        <a href="/user/${r.authorid}" class="reply-author am-fl am-inline-block am-margin-left-xs">${r.nickname}</a>
+                                        <span class="am-fl am-inline-block am-margin-left-xs">${bc.datehuman(r.inputtime)}</span>
+                                        <!--# if(authorid==r.authorid){ -->
+                                        <span class="am-fl am-inline-block am-margin-left-xs">楼主</span>
+                                        <!--# } -->
+                                        <span class="am-fr am-inline-block">${r.floor}楼</span>
+                                    </div>
+                                </div>
+                                <div class="am-u-sm-12">
+                                    <div class="reply-content am-padding" style="overflow: hidden">
+                                        <!--# if(r.isdelete==0){ -->
+                                        ${r.content}
+                                        <!--# }else if(r.isdelete==1){ -->
+                                        <div class="am-text-center" style="color: #958d8d;"><del>该帖已被删除</del></div>
+                                        <!--# } -->
+                                    </div>
+                                    <!--# if(r.isdelete==0){ -->
+                                    <ul class="am-nav am-nav-pills am-fr" style="font-size: 1.0rem;clear: both;">
+                                        <li><a class="up_btn" href="javascript:void(0)"><i class="am-icon-arrow-up"></i></a></li>
+                                    </ul>
+                                    <!--# } -->
+                                </div>
+                            </div>
+                        </li>
+                        <!--#}-->
+                    </ul>
+                </div>
+            </div>
+            <div class="am-panel am-panel-default community-panel" style="margin-bottom: 0.5rem;">
+                <div class="am-panel-bd">
+                    <ul class="am-pagination" style="margin-top: 0;">
+                        ${pages}
+                    </ul>
+                    <div style="overflow: hidden;">
+                    <!--# if(session.member!=null){ -->
+                    <button class="am-btn am-btn-primary am-btn-xs reply_topic am-fr"><i class="am-icon-reply am-margin-right-xs"></i>回复</button>
+                    <!--# } -->
+                    </div>
+                </div>
+            </div>
+            </#community>
+        </div>
+        <div class="am-u-md-3 am-u-sm-0 am-u-end am-padding-xs">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    <b>作者</b>
+                </div>
+                <div class="am-panel-bd">
+                    <div class="am-g">
+                        <div class="am-u-md-3">
+                            <a href="/user/${authorid}"><img src="${bc.thumb(avatar!,48,-1)}"
+                                                             title="${nickname}"
+                                                             class="avatar"></a>
+                        </div>
+                        <div class="am-u-md-9">
+                            <a href="/user/${authorid}">${nickname}</a>
+
+                            <div>积分：${score}</div>
+                        </div>
+                    </div>
+                    <div class="am-g">
+                        <div class="am-u-md-12 am-margin-xs">
+                            <div style="color: #8a8282;font-size: 1.0rem;">${signature}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    <b>作者其他话题</b>
+                </div>
+                <div class="am-panel-bd">
+                    <#community action="authortopics" authorid="${authorid}" excludetid="${id}" num="6" cache="300" var="data">
+                        <ul class="am-avg-md-1 am-avg-sm-1 panel-ul">
+                            <!--#for(r in data){-->
+                            <li>
+                                <a class="am-text-truncate" style="width: 100%;display: inline-block;" href="${r.url}" title="${r.title}">${r.title}</a>
+                            </li>
+                            <!--#}-->
+                        </ul>
+                    </#community>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="am-g am-g-fixed am-hide">
+        <div class="am-u-md-12 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel post-area" style="background:#F5F5F5">
+                <div class="am-panel-bd">
+                    <form id="f_reply_topic" class="am-form am-form-horizontal">
+                        <fieldset style="margin-top: 1rem;">
+                            <div class="am-form-group editor-area am-margin-bottom-xs" style="position: relative;">
+                                <textarea id="d-editor" name="content" style="height: 230px;"></textarea>
+                                <div class="grippie"></div>
+                            </div>
+                            <div class="am-form-group">
+                                <input type="hidden" name="dosubmit"/>
+                                <input type="hidden" name="topid" value="${id}"/>
+                                <button type="button" class="submitBtn am-btn am-btn-primary am-btn-xs">
+                                    <i class="am-icon-reply am-margin-right-xs"></i>回复</button>
+                                <span>回复话题奖励 1 积分，但是被管理员删除回复将会扣除作者 2 积分</span>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <!--#include("/default/common/bottom_community.html"){}-->
+</footer>
+</body>
+</html>

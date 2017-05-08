@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"添加用户",description:"",keywords:""}){}
+     -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/sha256.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/crypto/base64.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var validmsg="输入正确";
+            $("form").validator({
+                theme: 'simple_bottom',
+                fields:{
+                    'username':{
+                        rule:"用户名:required,length[2~20],remote[/admin/user/checkUsername]",
+                        ok:validmsg
+                    },
+                    'password':{
+                        rule:"密码:required,length[6~20]",
+                        ok:validmsg
+                    },
+                    'repassword':{
+                        rule:"重复输入密码:required,match[password]",
+                        ok:validmsg
+                    },
+                    'email':{
+                        rule:"E-mail:required,email",
+                        ok:validmsg
+                    }
+                },
+                valid: function(form){
+                    var data=$("form").serializeArray();
+                    _.map(data,function(f){
+                        if(f.name=='password' || f.name=='repassword'){
+                            f.value=Base64.encode(sha256_digest($("input[name='username']").val()+f.value));
+                        }
+                    });
+
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/user/add",
+                        data: data,
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.success}){
+                                window.top.layer.alert(ret.msg,function(index){
+                                    window.top.frames[1].datatable.ajax.reload();
+                                    window.top.layer.closeAll();
+                                })
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid:function(form,errors){
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+        });
+        var submitForm=function(){
+            $('form').trigger("validate");
+        }
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-sm">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-form-group">
+                        <label for="username" class="am-u-sm-3 am-form-label">用户名：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="username" type="text" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="password" class="am-u-sm-3 am-form-label">密码：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="password" type="password" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="repassword" class="am-u-sm-3 am-form-label">重复输入密码：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="repassword" type="password" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="email" class="am-u-sm-3 am-form-label">E-mail：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="email" type="text" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="realname" class="am-u-sm-3 am-form-label">真实姓名：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="realname" type="text" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="roles" class="am-u-sm-3 am-form-label">角色：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <!--#
+                                for(role in roles){
+                            -->
+                            <label class="am-checkbox-inline bgz-checkbox-inline">
+                                <input name="roles" type="checkbox" value="${role.id}">
+                                ${role.name}
+                            </label>
+                            <!--#
+                                }
+                            -->
+                        </div>
+                    </div>
+                    <input type="hidden" name="dosubmit"/>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

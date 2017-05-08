@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <!--#
+         include("/admin/head.html",{title:"编辑友情链接",description:"",keywords:""}){}
+     -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${JS_PATH}/kindeditor/themes/default/default.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" charset="utf-8" src="${JS_PATH}/kindeditor/kindeditor-all.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var validmsg="输入正确";
+            $("form").validator({
+                theme: 'simple_bottom',
+                fields:{
+                    'name':{
+                        rule:"名称:required",
+                        ok:validmsg
+                    },
+                    'url':{
+                        rule:"访问地址:url",
+                        ok:validmsg
+                    }
+                },
+                valid: function(form){
+                    var me = this;
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/flink/edit",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.success}){
+                                window.top.layer.alert(ret.msg,function(index){
+                                    window.top.frames[1].datatable.ajax.reload();
+                                    window.top.layer.closeAll();
+                                })
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid:function(form,errors){
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+
+
+            var options = {
+                fileManagerJson: "/admin/attachment/manager",
+                allowFileManager: true,
+                uploadJson: "/admin/attachment/upload",
+                filterMode: false,
+                bodyStyle:{'height' : 'auto','overflow' : 'initial'},
+            };
+
+            KindEditor.ready(function (K) {
+                var editor = K.editor(options);
+                $('.uploadBtn').click(function () {
+                    editor.loadPlugin('image', function () {
+                        editor.plugin.imageDialog({
+                            clickFn: function (url, title, width, height, border, align) {
+                                $('.uploadBtn>img').attr("src", url);
+                                $('input[name="icon"]').val(url);
+                                editor.hideDialog();
+                            }
+                        });
+                    });
+                });
+            });
+
+            $('#cancelthumb').on("click",function(){
+                $('.uploadBtn>img').attr("src","${IMG_PATH}/icon/upload-pic.png");
+                $('input[name="icon"]').val("");
+            })
+        });
+        var submitForm=function(){
+            $('form').trigger("validate");
+        }
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-sm">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-form-group">
+                        <label for="username" class="am-u-sm-3 am-form-label">名称：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="name" type="text" value="${name}" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="icon" class="am-u-sm-3 am-form-label">图标：</label>
+                        <input type="hidden" value="${icon}" name="icon">
+                        <a class="uploadBtn" href="javascript:void(0);">
+                            <!--#
+                                if(isEmpty(icon)){
+                            -->
+                            <img src="${IMG_PATH}/icon/upload-pic.png" width="135px" height="113px">
+                            <!--#
+                                }else{
+                            -->
+                            <img src="${icon}" width="135px" height="113px">
+                            <!--#
+                                }
+                            -->
+                        </a>
+                        <button id="cancelthumb" type="button" class="am-btn am-btn-default am-btn-xs am-margin-top-xs">取消图标</button>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="url" class="am-u-sm-3 am-form-label">访问地址：</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="url" type="text" value="${url}" class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <input type="hidden" name="id" value="${id}"/>
+                    <input type="hidden" name="dosubmit"/>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

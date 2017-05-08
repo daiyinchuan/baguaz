@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        include("/default/common/head_community.html"){}
+    -->
+    <link rel="stylesheet" type="text/css" href="${JS_PATH}/wangEditor/css/wangEditor.css"/>
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <link rel="stylesheet" href="${CSS_PATH}/commun.css" type="text/css"/>
+    <script type="text/javascript" src="${JS_PATH}/wangEditor/js/wangEditor.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/laytpl.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/layer/layer.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            window.$replycontrol=$("#reply-control");
+
+            $("#create_topic").on("click", function () {
+                if(!window.deditor){
+                    load_reply_area()
+                }
+                $edittxt.parents(".am-g").removeClass("am-hide")
+                $("body,html").animate({scrollTop:$edittxt.offset().top},0);
+                $edittxt.focus();
+            })
+
+            $("#f_create_topic").delegate(".submitBtn", "click", function () {
+                if($("#d-editor")[0].value=='<p><br><\/p>'){
+                    $("#d-editor")[0].value=''
+                }
+                $('form#f_create_topic').trigger("validate");
+            })
+        })
+
+
+        var load_reply_area=function(){
+            wangEditor.config.printLog = false;
+            window.deditor = new wangEditor('d-editor');
+            deditor.config.uploadImgUrl = '/attachment/upload';
+            deditor.config.uploadImgFns.onload = function (resultText, xhr) {
+                if(resultText.indexOf("error")>0){
+                    var err=$.parseJSON(resultText)
+                    if(err.error==1){
+                        window.top.layer.alert(err.message)
+                        return;
+                    }
+                }
+                deditor.command(null, 'insertHtml', '<img src="' + resultText + '" style="max-width:100%;"/>');
+            };
+            deditor.onchange = function () {
+                if($("#d-editor")[0].value=='<p><br><\/p>'){
+                    $("#d-editor")[0].value=''
+                }
+                $('#d-editor').trigger("validate");
+            };
+            deditor.config.menuFixed = false;
+            deditor.create();
+
+            var $grippie=$("#f_create_topic .grippie")
+            window.$edittxt=$("#f_create_topic .wangEditor-txt");
+            var sh=$edittxt.height()
+            $grippie.on("click", function () {
+                $edittxt.height(sh+230)
+            })
+
+            /*
+             * selected_sec
+             */
+            var secid=$("#selected_sec").attr("secid")
+            $("#f_create_topic select option[value='"+secid+"']").prop("selected",true)
+
+            $("form#f_create_topic").validator({
+                theme: 'simple_bottom',
+                fields:{
+                    'title':{
+                        rule:"标题:required",
+                    },
+                    'content':{
+                        rule:"内容:required",
+                    },
+                },
+                valid: function(form){
+                    var me = this;
+                    me.holdSubmit(true);
+                    var $submitBtn=$(form).find(".submitBtn");
+                    $submitBtn.html('发布话题<i class="am-icon-spinner am-icon-pulse am-margin-left-xs"></i>')
+                              .addClass("am-disabled")
+                    $.ajax({
+                        type: "POST",
+                        url: "/community/createTopic",
+                        data: $(form).serialize(),
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${@C.success}){
+                                location.href=ret.map.url
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                            $submitBtn.html('发布话题').removeClass("am-disabled")
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+<header>
+    <!--#include("/default/common/top_community.html"){}-->
+</header>
+<section class="commu-secstyle">
+    <div class="am-g am-g-fixed">
+        <div class="am-u-md-9 am-u-sm-12 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel" style="margin-bottom: 0.5rem;">
+                <div class="am-panel-hd am-text-xs">
+                    <ul class="am-nav am-nav-pills" style="display: inline-block;">
+                        <li class="am-dropdown" data-am-dropdown>
+                            <a class="am-dropdown-toggle" data-am-dropdown-toggle href="javascript:;">
+                                <span id="selected_sec" secid="${selected_secid}">${selected_sec}</span>
+                                <i class="am-icon-caret-down"></i>
+                            </a>
+                            <#community action="section" cache="3600" var="data">
+                                <ul class="am-dropdown-content">
+                                    <li <!--#if(selected_secid==0){print('class="am-active"');}--> ><a
+                                        href="/community">所有板块</a></li>
+                                    <!--#for(sec in data){-->
+                                    <li <!--#if(selected_secid==sec.id){print('class="am-active"');}-->><a
+                                        href="${sec.url}">${sec.pos}${sec.name}</a></li>
+                                    <!--#}-->
+                                </ul>
+                            </#community>
+                        </li>
+                        <li <!--#if(label=='latest'){print('class="am-active"');}-->><a href="${latest_url}">最新</a></li>
+                        <li <!--#if(label=='good'){print('class="am-active"');}-->><a href="${good_url}">精华</a></li>
+                        <li <!--#if(label=='noreply'){print('class="am-active"');}-->><a href="${noreply_url}">等待回复</a></li>
+                    </ul>
+                    <!--#if(!isEmpty(session.member)){-->
+                    <a id="create_topic" class="am-btn am-btn-primary am-btn-xs" style="float: right"
+                       href="javascript:void(0)">发布话题</a>
+                    <!--#}-->
+                </div>
+                <div class="am-panel-bd">
+                    <#community action="lists" secid="${SEC.id!0}" label="${label}" num="10" setpages="9" order="id DESC" page="${page!1}" var="data,pages">
+                        <ul class="am-list topic-ul">
+                            <!--#for(r in data.list){-->
+                            <li>
+                                <div class="am-g">
+                                    <div class="am-u-md-1 am-u-sm-2">
+                                        <a href="/user/${r.authorid}"><img src="${bc.thumb(r.avatar,48,-1)}" title="${r.nickname}"
+                                                                           class="avatar"></a>
+                                    </div>
+                                    <div class="am-u-md-10 am-u-sm-8">
+                                        <div>
+                                            <!--#if(r.top==1){-->
+                                            <i class="l-label c-top am-icon-thumb-tack" title="置顶"></i>
+                                            <!--#}-->
+                                            <!--#if(r.good==1){-->
+                                            <i class="l-label c-good am-icon-diamond" title="精华"></i>
+                                            <!--#}-->
+                                            <a href="${r.url}">${r.title}</a>
+                                        </div>
+                                        <div class="attr">
+                                            <a class="node" href="${r.securl}">${r.secname}</a>
+                                            <span>• ${r.reply_count}个回复 • ${r.view}次浏览 • ${bc.datehuman(r['last_reply_time'])}</span>
+                                        </div>
+                                    </div>
+                                    <div class="am-u-md-1 am-u-sm-2">
+                                        <!--#if(!isEmpty(r.last_reply_authorid)){-->
+                                        <a href="/user/${r.last_reply_authorid}">
+                                            <img
+                                                src="${bc.thumb(r.last_reply_author_avatar,25,-1)}" style="width: 25px;border-radius: 25px;"></a>
+                                        <!--#}-->
+                                    </div>
+                                </div>
+                            </li>
+                            <!--#}-->
+                        </ul>
+                        <ul class="am-pagination" style="margin-top: 0;">
+                            ${pages}
+                        </ul>
+                    </#community>
+                </div>
+            </div>
+        </div>
+        <div class="am-u-md-3 am-u-sm-8 am-u-end am-padding-xs">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-bd">
+                    <#content action="page" catid="99" cache="3600" var="data">
+                        ${data.content}
+                    </#content>
+                </div>
+            </div>
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    <b style="margin-right: 5px;">积分榜</b>
+                    <a href="#">TOP100 >></a>
+                </div>
+                <div class="am-panel-bd">
+                    <#community action="highscore" num="10" cache="120" var="data">
+                    <ul class="am-avg-md-2 am-avg-sm-2 panel-ul">
+                        <!--#for(r in data){-->
+                        <li>${r.score}</li>
+                        <li><a href="/user/${r.id}">${r.nickname}</a></li>
+                        <!--#}-->
+                    </ul>
+                    </#community>
+                </div>
+            </div>
+
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    <b style="margin-right: 5px;">社区运行状态</b>
+                </div>
+                <div class="am-panel-bd">
+                    <#community action="status" cache="300" var="data">
+                        <ul class="am-avg-md-2 am-avg-sm-2 panel-ul">
+                            <li>注册用户</li>
+                            <li>${data.m_count}</li>
+                            <li>话题</li>
+                            <li>${data.t_count}</li>
+                            <li>回复</li>
+                            <li>${data.r_count}</li>
+                        </ul>
+                    </#community>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--#if(!isEmpty(session.member)){-->
+    <div class="am-g am-g-fixed am-hide">
+        <div class="am-u-md-12 am-padding-xs">
+            <div class="am-panel am-panel-default community-panel post-area" style="background:#F5F5F5">
+                <div class="am-panel-bd">
+                    <form id="f_create_topic" class="am-form am-form-horizontal">
+                        <fieldset style="margin-top: 1rem;">
+                            <div class="am-form-group">
+                                <div class="am-u-md-6 am-u-sm-12 inputtxt-area am-padding-bottom-xs am-padding-left-0">
+                                    <input name="title" placeholder="话题标题" type="text" class="am-inline-block"/>
+                                </div>
+                                <div class="am-u-md-3 am-u-sm-6 am-padding-0 am-u-end">
+                                    <#community action="section" cache="3600" var="data">
+                                        <select name="secid">
+                                            <!--#for(sec in data){-->
+                                            <option value="${sec.id}">${sec.pos}${sec.name}</option>
+                                            <!--#}-->
+                                        </select>
+                                    </#community>
+                                </div>
+                            </div>
+                            <div class="am-form-group editor-area am-margin-bottom-xs" style="position: relative;">
+                                <textarea id="d-editor" name="content" style="height: 18rem;"></textarea>
+                                <div class="grippie"></div>
+                            </div>
+                            <div class="am-form-group">
+                                <input type="hidden" name="dosubmit"/>
+                                <button type="button" class="submitBtn am-btn am-btn-primary am-btn-xs">发布话题</button>
+                                <span>发布话题奖励 3 积分，但是被管理员删除话题将会扣除作者 5 积分</span>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--#}-->
+</section>
+<footer>
+    <!--#include("/default/common/bottom_community.html"){}-->
+</footer>
+</body>
+</html>

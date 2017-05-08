@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!--#
+        include("/default/common/head_community.html"){}
+    -->
+    <link rel="stylesheet" href="${CSS_PATH}/commun.css" type="text/css"/>
+</head>
+<body>
+<header>
+    <!--#include("/default/common/top_community.html"){}-->
+</header>
+<section>
+    <div class="am-g am-g-fixed">
+        <div class="am-u-md-9 am-u-sm-12 am-padding-right-xs">
+            <div class="am-panel am-panel-default community-panel topic-panel" style="min-height: 40rem;">
+                <div class="am-panel-bd" style="text-align: center;padding-top: 10rem;">
+                    <p>申请成功，您获得会员用户号码：</p>
+                    <p class="am-text-success am-text-xxl">${mid}</p>
+                    <#content action="page" catid="101" cache="3600" var="data">
+                        ${data.content}
+                    </#content>
+                    <a href="/login" class="am-btn am-btn-success am-btn-xl">立即登录</a>
+                </div>
+            </div>
+        </div>
+        <div class="am-u-md-3 am-u-sm-0 am-padding-left-xs">
+            <div class="am-panel am-panel-default community-panel">
+                <div class="am-panel-hd">
+                    <b>关于</b>
+                </div>
+                <div class="am-panel-bd">
+                    <#content action="page" catid="100" cache="3600" var="data">
+                        ${data.content}
+                    </#content>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<footer>
+    <!--#include("/default/common/bottom_community.html"){}-->
+</footer>
+</body>
+</html>

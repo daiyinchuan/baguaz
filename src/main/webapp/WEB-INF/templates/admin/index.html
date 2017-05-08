@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+	<!--#
+		include("/admin/head.html",{title:"后台管理",description:"",keywords:""}){}
+    -->
+	<style type="text/css">
+		.sideMenu h3{
+			margin-bottom: 0rem;
+		}
+		.sideMenu ul{
+			margin: 0;
+		}
+		.sideMenu ul>li{
+			margin: 10px 10px 0 10px;
+		}
+	</style>
+    <script type="text/javascript" src="${JS_PATH}/jquery.dycmenu.js"></script>
+	<script type="text/javascript" src="${JS_PATH}/layer/layer.js"></script>
+    <script type="text/javascript">
+    	$(function(){
+			$.ajax({
+				type: "GET",
+				url: "/admin/sideMenu",
+				dataType: "json",
+				success: function(ret){
+					if(ret.code==${@C.success}){
+						var smli="";
+						$.each(ret.map.sideMenu,function(i,n){
+							smli+="<li>";
+							smli+="<h3>"+n.h3+"</h3>";
+							smli+="<ul>";
+							if(n.ul){
+								$.each(n.ul,function(j,m) {
+									smli+="<li>";
+									smli+="<span>";
+									smli+=m.span;
+									smli+="</span>";
+									smli+="<ul>";
+									if(m.ul){
+										$.each(m.ul,function(k,p) {
+											smli+="<li>";
+											smli+='<a href="'+ p.href+'">';
+											smli+= p.a;
+											smli+="</a>";
+											smli+="</li>";
+										});
+									}
+									smli+="</ul>";
+									smli+="</li>";
+								});
+							}
+							smli+="</ul>";
+							smli+="</li>";
+						});
+
+						$('.sideMenu>ul').append(smli);
+
+						$('.sideMenu>ul').dycmenu();
+						$('.sideMenu>ul a').on("click",function(event){
+							event.preventDefault();
+							$('#ifrm_main').attr("src",$(this).attr("href"));
+
+							if($(this).attr("href")=="/admin/content/init" && $("#catmenu").hasClass("am-hide")){
+								indexSwitch2();
+							}else if($(this).attr("href")!="/admin/content/init" && !$("#catmenu").hasClass("am-hide")){
+								indexSwitch1();
+							}
+							/*
+							 * 生成当前位置
+							 */
+							var a=$(this).text();
+							var ps=$(this).parents("li");
+							var c=ps.eq(1).find("span").text();
+							var m=ps.eq(2).find("h3").text();
+							$(".curpos").html(m+" > "+c+" > "+a);
+
+							if($(this).attr("href")!="/admin/content/init"){
+								$(".cmpost").html("");
+							}
+						})
+					}
+				}
+			});
+
+			indexSwitch1();
+
+ 			$("#ifrm_main").on("load",function(){
+				$.ajax({
+					type: "GET",
+					url: "/admin/checkSession",
+					dataType: "json",
+					success: function(ret){
+						if(ret.code==${@C.invalid_session}){
+							window.frames[1].document.write("");
+							window.top.layer.alert(ret.msg,function(index){
+								window.top.layer.close(index)
+								location.href="/admin/login";
+							})
+						}
+					}
+				});
+			})
+    	});
+
+		var indexSwitch1=function(){
+			$("#catmenu .side_switch").remove();
+
+			var side_switch='<div class="side_switch am-btn am-btn-default am-radius">\
+						<i class="am-icon-caret-left"></i>\
+						<i class="am-icon-caret-right am-hide"></i>\
+					</div>';
+
+			if(!$("#catmenu").hasClass("am-hide")){
+				$("#catmenu").addClass("am-hide");
+			}
+			$("#main").append(side_switch);
+
+			$("#main").removeClass("am-u-sm-8");
+			if(!$("#main").hasClass("am-u-sm-10")) {
+				$("#main").addClass("am-u-sm-10");
+			}
+
+			var $ufirst=$("#index>div:first");
+			var $ulast=$("#index>div:last");
+			$(".side_switch").off("click").on("click",
+				function(){
+					if($ufirst.hasClass("am-hide")){
+						$ufirst.removeClass("am-hide");
+						$ulast.removeClass("am-u-sm-12").addClass("am-u-sm-10");
+						$(this).find(".am-icon-caret-right").addClass("am-hide");
+						$(this).find(".am-icon-caret-left").removeClass("am-hide");
+					}else{
+						$ufirst.addClass("am-hide");
+						$ulast.removeClass("am-u-sm-10").addClass("am-u-sm-12");
+						$(this).find(".am-icon-caret-left").addClass("am-hide");
+						$(this).find(".am-icon-caret-right").removeClass("am-hide");
+					}
+				}
+			)
+		}
+
+		var indexSwitch2=function(){
+			$("#main .side_switch").remove();
+
+			var side_switch='<div class="side_switch am-btn am-btn-default am-radius">\
+						<i class="am-icon-caret-left"></i>\
+						<i class="am-icon-caret-right am-hide"></i>\
+					</div>';
+
+			$("#catmenu").append(side_switch).removeClass("am-hide");
+
+			$("#main").removeClass("am-u-sm-10").addClass("am-u-sm-8");
+
+			var $ufirst=$("#index>div:first");
+			var $ulast=$("#index>div:last");
+			$(".side_switch").off("click").on("click",
+				function(){
+					if($ufirst.hasClass("am-hide")){
+						$ufirst.removeClass("am-hide");
+						$ulast.removeClass("am-u-sm-10").addClass("am-u-sm-8");
+						$(this).find(".am-icon-caret-right").addClass("am-hide");
+						$(this).find(".am-icon-caret-left").removeClass("am-hide");
+					}else{
+						$ufirst.addClass("am-hide");
+						$ulast.removeClass("am-u-sm-8").addClass("am-u-sm-10");
+						$(this).find(".am-icon-caret-left").addClass("am-hide");
+						$(this).find(".am-icon-caret-right").removeClass("am-hide");
+					}
+				}
+			)
+		}
+    </script>
+</head>
+<body>
+	<header>
+		<!--#include("/admin/top.html"){}-->
+	</header>
+    <section>
+        <div id="index" class="am-g">
+			<div id="leftmenu" class="am-u-sm-2 am-padding-0">
+				<div class="sideMenu menu_border">
+					<ul>
+					</ul>
+				</div>
+			</div>
+			<div id="catmenu" class="am-u-sm-2 am-padding-0 am-hide">
+				<iframe id="ifrm_catmenu" src=""></iframe>
+			</div>
+            <div id="main" class="am-u-sm-10 am-padding-0">
+                <div class="am-padding-sm">
+					<i class="am-icon-home am-icon-sm"></i>
+                    <span>当前位置：</span>
+                    <span class="curpos"></span>
+					<span class="cmpost"></span>
+                </div>
+                <iframe id="ifrm_main" src="/admin/main"></iframe>
+            </div>
+        </div>
+    </section>
+	<footer>
+		<!--#include("/admin/bottom.html"){}-->
+	</footer>
+</body>
+</html>

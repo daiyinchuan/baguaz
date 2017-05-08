@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <!--#
+        include("/admin/head.html",{title:"添加内容",description:"",keywords:""}){}
+
+        var opt=isEmpty(page)?"add":"edit";
+        var retcode=isEmpty(page)?@C.scs_dataadd:@C.success;
+    -->
+    <link rel="stylesheet" href="${JS_PATH}/nicevalid/jquery.validator.css" type="text/css"/>
+    <script charset="utf-8" src="${JS_PATH}/kindeditor/kindeditor-all.js"></script>
+    <script charset="utf-8" src="${JS_PATH}/kindeditor/lang/zh_CN.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/jquery.validator.js"></script>
+    <script type="text/javascript" src="${JS_PATH}/nicevalid/local/zh-CN.js"></script>
+    <script type="text/javascript">
+        var editor;
+        $(function() {
+			/*if(parent.bgz.pageSwitch==0){
+                window.setTimeout(function () {
+                    parent.$(".side_switch").trigger("click");
+                },1000)
+                parent.bgz.pageSwitch=1;
+            } */
+
+            var options = {
+                fileManagerJson:"/admin/attachment/manager",
+                allowFileManager:true,
+                uploadJson:"/admin/attachment/upload",
+                filterMode : false,
+                bodyStyle:{'height' : 'auto','overflow' : 'initial'},
+            };
+            KindEditor.ready(function(K) {
+                editor = K.create('textarea[name="content"]', options);
+            });
+            var validmsg="输入正确";
+            $("form").validator({
+                theme: 'simple_right',
+                fields:{
+                    'title':{
+                        rule:"标题:required",
+                        tip:"请输入标题",
+                        ok:validmsg
+                    }
+                },
+                valid: function(form){
+                    var me = this;
+                    // 提交表单之前，hold住表单，防止重复提交
+                    me.holdSubmit();
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/content/${opt}",
+                        data: $("form").serialize(),
+                        dataType: "json",
+                        success: function(ret){
+                            if(ret.code==${retcode}){
+                                window.top.layer.alert(ret.msg);
+                            }
+                        },
+                        complete:function(ret){
+                            me.holdSubmit(false);
+                        }
+                    });
+                },
+                invalid:function(form,errors){
+                    window.top.layer.alert(errors[0]);
+                }
+            });
+
+            $('.submitBtn').on("click",function(event){
+                editor.sync();
+                $('form').trigger("validate");
+            });
+        });
+    </script>
+</head>
+<body>
+<section>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm">
+            <ul class="am-nav am-nav-pills">
+                <li class="am-active"><a href="javascript:void(0);">单网页管理</a></li>
+                <li><a target="_blank" href="${url}">点击访问</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="am-g">
+        <div class="am-u-sm-12 am-padding-sm am-padding-top-0">
+            <form class="am-form am-form-horizontal">
+                <fieldset>
+                    <div class="am-form-group">
+                        <label for="title" class="am-u-sm-1 am-form-label am-padding-left-0">标题</label>
+                        <div class="am-u-sm-6 am-u-end am-padding-0">
+                            <input name="title" type="text" value="<!--#if(!isEmpty(page)) print(page.title);-->"
+                                   class="am-inline-block"/>
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="keywords" class="am-u-sm-1 am-form-label am-padding-left-0">关键词</label>
+                        <div class="am-u-sm-6 am-padding-0">
+                            <input name="keywords" type="text" value="<!--#if(!isEmpty(page)) print(page.keywords);-->"
+                                   class="am-inline-block"/>
+                        </div>
+                        <div class="am-u-sm-4 am-u-end am-padding-left-xs am-padding-top-xs">
+                            关键字中间用半角逗号隔开
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label for="content" class="am-u-sm-1 am-form-label am-padding-left-0">内容</label>
+                        <div class="am-u-sm-11 am-u-end am-padding-0">
+                            <textarea name="content" style="width:100%;height:300px;">
+                            <!--#
+                            if(!isEmpty(page)){
+                            -->
+                                ${page.content}
+                            <!--#
+                            }
+                            -->
+                            </textarea>
+                        </div>
+                    </div>
+                    <input type="hidden" name="catid" value="${catid}"/>
+                    <input type="hidden" name="type" value="1"/>
+                    <input type="hidden" name="dosubmit"/>
+                    <div class="am-form-group am-margin-top-sm">
+                        <label class="am-u-sm-1 am-form-label">
+                        </label>
+                        <div class="am-u-sm-8 am-u-end am-padding-0">
+                            <button type="button" class="submitBtn am-btn am-btn-default am-btn-sm">提交</button>
+                        </div>
+                    </div>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>
