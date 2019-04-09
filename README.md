@@ -27,8 +27,8 @@
 2. 自定义模板路径`/src/main/webapp/WEB-INF/templates/自定义模板名称`
 
 # 3 应用案例
-- 给之前公司开发的公司产品官网[http://www.jimidun.com](http://www.jimidun.com)
-- 自己的网站[http://www.baguaz.com](http://www.baguaz.com)
+- 
+- 
 
 # 4 附录
 
